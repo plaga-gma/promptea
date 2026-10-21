@@ -1,5 +1,6 @@
-import { useContext, useRef, useState } from 'preact/hooks';
+import { useContext, useEffect, useRef, useState } from 'preact/hooks';
 import { detailKey, detailsOf, NOTE_MAX, noteKey } from '../../engine/build';
+import { Fragment } from 'preact';
 import { harmonyPalette, bestTextPair, HARMONIES, type Harmony } from '../../engine/color';
 import type { Detail, Option, SegmentRole, SelectionValue, Selections, Step } from '../../engine/types';
 import { t } from '../../i18n/es';
@@ -91,8 +92,19 @@ function DetailRow({ step, option, detail, selections, onSetKey }: { step: Step;
 }
 
 /** Lo que se abre debajo de una opción elegida: sus subopciones y una nota libre. */
-function Refine({ step, option, selections, onSetKey }: { step: Step; option: Option } & Pick<Props, 'selections' | 'onSetKey'>) {
+function Refine({
+  step,
+  option,
+  selections,
+  onSetKey,
+  reveal,
+}: { step: Step; option: Option; reveal?: boolean } & Pick<Props, 'selections' | 'onSetKey'>) {
   const details = detailsOf(step, option);
+  const box = useRef<HTMLDivElement>(null);
+  // Recién tocada: que el recuadro quede a la vista (sobre todo en el celular).
+  useEffect(() => {
+    if (reveal) box.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, []);
   const nKey = noteKey(step.id, option.id);
   const note = typeof selections[nKey] === 'string' ? (selections[nKey] as string) : '';
   const [noteOpen, setNoteOpen] = useState(note !== '');
@@ -102,7 +114,7 @@ function Refine({ step, option, selections, onSetKey }: { step: Step; option: Op
     setTimeout(() => inputRef.current?.focus(), 0);
   };
   return (
-    <div class={`refine${details.length ? '' : ' compact'}`}>
+    <div ref={box} class={`refine${details.length ? '' : ' compact'}`}>
       <p class="refine-title">
         <span class="refine-check" aria-hidden="true">✓</span> <strong>{option.label.es}</strong>
         {details.length > 0 && <span class="muted"> · {t.builder.refine}</span>}
@@ -171,7 +183,11 @@ function OptionGrid({ step, value, onChange, selections, onSetKey }: GridProps) 
   const selected = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
   const max = step.type === 'multi' ? (step.max ?? Infinity) : 1;
 
+  // La última opción que se tocó: su recuadro de subopciones se lleva a la vista al abrirse.
+  const [touched, setTouched] = useState<string | null>(null);
+
   const toggle = (id: string) => {
+    setTouched(id);
     if (step.type === 'single') return onChange(selected[0] === id ? undefined : id);
     if (selected.includes(id)) {
       const next = selected.filter((s) => s !== id);
@@ -184,9 +200,19 @@ function OptionGrid({ step, value, onChange, selections, onSetKey }: GridProps) 
 
   const options = step.options ?? [];
   const byId = new Map(options.map((o) => [o.id, o]));
-  const card = (o: Option) => (
-    <OptionCard key={o.id} option={o} selected={selected.includes(o.id)} more={Boolean(o.details?.length)} onClick={() => toggle(o.id)} />
-  );
+  // Las subopciones se abren pegadas a la tarjeta elegida: el recuadro ocupa toda la fila siguiente
+  // y, con `grid-auto-flow: dense`, las tarjetas que siguen completan la fila de la elegida.
+  const rendered = new Set<string>();
+  const card = (o: Option) => {
+    const isOn = selected.includes(o.id);
+    if (isOn) rendered.add(o.id);
+    return (
+      <Fragment key={o.id}>
+        <OptionCard option={o} selected={isOn} more={Boolean(o.details?.length)} onClick={() => toggle(o.id)} />
+        {isOn && <Refine step={step} option={o} selections={selections} onSetKey={onSetKey} reveal={touched === o.id} />}
+      </Fragment>
+    );
+  };
   const openGroup = (id: string) => {
     setGroup(id);
     toolbar.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -249,9 +275,12 @@ function OptionGrid({ step, value, onChange, selections, onSetKey }: GridProps) 
         </div>
       )}
       {body}
-      {chosen.map((o) => (
-        <Refine key={o.id} step={step} option={o} selections={selections} onSetKey={onSetKey} />
-      ))}
+      {/* Elegidas que no están a la vista (por ejemplo, de otra categoría): su recuadro va al final. */}
+      {chosen
+        .filter((o) => !rendered.has(o.id))
+        .map((o) => (
+          <Refine key={o.id} step={step} option={o} selections={selections} onSetKey={onSetKey} />
+        ))}
     </>
   );
 }
