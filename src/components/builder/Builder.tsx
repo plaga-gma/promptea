@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { getAdapter } from '../../engine/adapters';
-import { buildSpec, findConflicts, isStepVisible } from '../../engine/build';
+import { buildSpec, findConflicts, isStepVisible, selectedOptions } from '../../engine/build';
 import type { Area, LocalizedText, SelectionValue, Selections } from '../../engine/types';
 import { t } from '../../i18n/es';
 import { addToHistory, findSaved, getPrefs, isFavorite, newId, setPrefs, toggleFavorite, type SavedPrompt } from '../../lib/storage';
+import { FilterDefs } from '../demos/FilterDefs';
+import { DemoContext, type FilterLook } from '../demos/photos';
 import '../demos/demos.css';
 import './builder.css';
 import { PromptPanel } from './PromptPanel';
@@ -14,6 +16,7 @@ interface Props {
   area: Area;
 }
 
+/** Cuánto se nota el filtro en la muestra según el paso "Intensidad" de Edición. */
 function hasValue(v: SelectionValue | undefined) {
   if (v === undefined) return false;
   if (typeof v === 'string') return v.trim() !== '';
@@ -46,12 +49,14 @@ export default function Builder({ sectionId, area }: Props) {
   const [lang, setLang] = useState<'en' | 'es'>('en');
   const [creativity, setCreativity] = useState<0 | 1 | 2>(1);
   const [favorite, setFavorite] = useState(false);
+  const [photo, setPhoto] = useState('retrato');
 
   // Preferencias y prompt guardado (?cargar=<id>) se leen al montar, para no romper la hidratación.
   useEffect(() => {
     const prefs = getPrefs();
     setModelId(prefs.modelId);
     setAdvanced(prefs.advanced);
+    setPhoto(prefs.samplePhoto);
     const id = new URLSearchParams(location.search).get('cargar');
     const saved = id ? findSaved(id) : undefined;
     if (saved && saved.areaId === area.id) {
@@ -73,6 +78,9 @@ export default function Builder({ sectionId, area }: Props) {
   }
 
   useEffect(() => setFavorite(hasContent && isFavorite(result.prompt)), [result.prompt, hasContent]);
+
+  // El ejemplo del paso de texto libre cambia según la operación elegida ("Ej.: un traje azul…").
+  const targetHint = area.steps.flatMap((s) => selectedOptions(s, selections)).find((o) => o.meta?.targetHint)?.meta?.targetHint;
 
   const update = (stepId: string, value: SelectionValue | undefined) =>
     setSelections((prev) => {
@@ -120,47 +128,71 @@ export default function Builder({ sectionId, area }: Props) {
     setPrefs({ modelId: id });
   };
 
+  const changePhoto = (id: string) => {
+    setPhoto(id);
+    setPrefs({ samplePhoto: id });
+  };
+  // El paso "Intensidad" muestra el efecto elegido: el último paso a la vista con un filtro (o un antes y después) elegido.
+  let look: FilterLook | undefined;
+  for (const step of area.steps) {
+    if (step.role === 'intensity' || !isStepVisible(step, advanced, area, selections)) continue;
+    const demo = selectedOptions(step, selections)[0]?.demo;
+    if (demo?.kind === 'filter') look = demo;
+    else if (demo?.kind === 'compare') look = { kind: 'filter', ...demo.after };
+  }
+  const demoSettings = useMemo(() => ({ photo, setPhoto: changePhoto, look }), [photo, look]);
+
   const changeAdvanced = (value: boolean) => {
     setAdvanced(value);
     setPrefs({ advanced: value });
   };
 
   return (
-    <div class="builder">
-      <div class="steps">
-        <div class="mode card">
-          <span class="small muted">{t.builder.modeLabel}</span>
-          <div class="groups" role="group" aria-label={t.builder.modeLabel}>
-            <button type="button" class="chip" aria-pressed={!advanced} onClick={() => changeAdvanced(false)}>
-              {t.builder.simple}
-            </button>
-            <button type="button" class="chip" aria-pressed={advanced} onClick={() => changeAdvanced(true)}>
-              {t.builder.advanced}
-            </button>
+    <DemoContext.Provider value={demoSettings}>
+      <div class="builder">
+        <FilterDefs />
+        <div class="steps">
+          <div class="mode card">
+            <span class="small muted">{t.builder.modeLabel}</span>
+            <div class="groups" role="group" aria-label={t.builder.modeLabel}>
+              <button type="button" class="chip" aria-pressed={!advanced} onClick={() => changeAdvanced(false)}>
+                {t.builder.simple}
+              </button>
+              <button type="button" class="chip" aria-pressed={advanced} onClick={() => changeAdvanced(true)}>
+                {t.builder.advanced}
+              </button>
+            </div>
+            <span class="small muted">{t.builder.modeHint}</span>
           </div>
-          <span class="small muted">{t.builder.modeHint}</span>
+          {visibleSteps.map((step, i) => (
+            <StepView
+              key={step.id}
+              step={step}
+              index={i}
+              value={selections[step.id]}
+              placeholder={step.showIfMeta === 'needsTarget' ? targetHint : undefined}
+              onChange={(v) => update(step.id, v)}
+            />
+          ))}
         </div>
-        {visibleSteps.map((step, i) => (
-          <StepView key={step.id} step={step} index={i} value={selections[step.id]} onChange={(v) => update(step.id, v)} />
-        ))}
+        <PromptPanel
+          adapter={adapter}
+          result={result}
+          hasContent={hasContent}
+          missing={missing}
+          warnings={warnings}
+          lang={lang}
+          creativity={creativity}
+          favorite={favorite}
+          onModel={changeModel}
+          onLang={setLang}
+          onCreativity={setCreativity}
+          onCopy={onCopy}
+          onOpen={onOpen}
+          onFavorite={() => setFavorite(toggleFavorite(entry()))}
+          onReset={() => setSelections({})}
+        />
       </div>
-      <PromptPanel
-        adapter={adapter}
-        result={result}
-        hasContent={hasContent}
-        missing={missing}
-        warnings={warnings}
-        lang={lang}
-        creativity={creativity}
-        favorite={favorite}
-        onModel={changeModel}
-        onLang={setLang}
-        onCreativity={setCreativity}
-        onCopy={onCopy}
-        onOpen={onOpen}
-        onFavorite={() => setFavorite(toggleFavorite(entry()))}
-        onReset={() => setSelections({})}
-      />
-    </div>
+    </DemoContext.Provider>
   );
 }

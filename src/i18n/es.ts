@@ -18,6 +18,9 @@ export const es = {
     freeTextTip: 'Podés escribir en español. Si sabés inglés, escribilo en inglés: el resultado suele ser más preciso.',
     copyTooLong: 'Textos cortos salen mejor: probá con 2 a 4 palabras.',
     reset: 'Empezar de nuevo',
+    samplePhoto: 'Ver sobre',
+    before: 'Antes',
+    after: 'Después',
   },
   panel: {
     title: 'Tu prompt',

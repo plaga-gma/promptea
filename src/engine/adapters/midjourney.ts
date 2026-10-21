@@ -21,11 +21,13 @@ export const midjourney: ModelAdapter = {
     if (spec.ratio) params.push(`--ar ${spec.ratio[0]}:${spec.ratio[1]}`);
     if (spec.avoid.length) params.push(`--no ${spec.avoid.join(', ')}`);
     if (spec.literal || creativity === 0) params.push('--raw');
+    if (spec.tile) params.push('--tile');
     if (STYLIZE[creativity] !== 100) params.push(`--s ${STYLIZE[creativity]}`);
     const notes = [
       { es: 'Los parámetros van al final: --ar es la proporción, --no lo que hay que evitar y --s cuánto "embellece" Midjourney.' },
     ];
     if (spec.copy.length) notes.push({ es: 'Si el texto sale ilegible, bajá la libertad creativa (usa --raw).' });
+    if (spec.tile) notes.push({ es: '--tile hace que el diseño se repita sin cortes, como un papel tapiz.' });
     if (spec.mode === 'edit') {
       notes.push({ es: 'Midjourney no edita con solo texto: abrí tu imagen en su Editor y usá este prompt ahí.' });
     }

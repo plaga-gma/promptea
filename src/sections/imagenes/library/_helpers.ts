@@ -7,6 +7,12 @@ interface Extra {
   conflicts?: string[];
 }
 
+/**
+ * Para opciones que piden desenfoque a propósito (bokeh, tilt-shift, barrido): con `meta.allow`
+ * el prompt deja de pedir "sin desenfoque" y "foco nítido" (Stable Diffusion los agrega por defecto).
+ */
+export const BLUR = ['blurry', 'out of focus'];
+
 /** Atajo para declarar opciones del catálogo: id, nombre, fragmento en inglés y en español. */
 export function o(id: string, label: string, en: string, es: string, extra: Extra = {}): Option {
   return {

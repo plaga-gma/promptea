@@ -17,7 +17,8 @@ export const TIPOGRAFIAS: Option[] = [
   o('humanista', 'Sans humanista', 'friendly humanist sans-serif typography', 'tipografía sans serif humanista y amable', { hint: 'Cercana y muy legible.', demo: font('Source Sans 3', { weight: 600 }) }),
   o('redondeada', 'Redondeada', 'soft rounded sans-serif typography (like Nunito)', 'tipografía sans serif redondeada y suave (como Nunito)', { hint: 'Amigable, infantil y suave.', demo: font('Nunito', { weight: 800 }) }),
   o('condensada', 'Condensada', 'bold condensed sans-serif typography, all caps (like Oswald)', 'tipografía sans serif condensada y gruesa, en mayúsculas (como Oswald)', { hint: 'Impacto y deporte: ideal para titulares.', demo: font('Oswald', { weight: 700, upper: true }) }),
-  o('mono', 'Monoespaciada', 'monospaced typewriter-style typography', 'tipografía monoespaciada estilo máquina de escribir', { hint: 'Técnica, código o máquina de escribir.', demo: font('JetBrains Mono', { weight: 500 }) }),
+  o('mono', 'Monoespaciada', 'clean monospaced typography, technical and code-like', 'tipografía monoespaciada limpia, técnica, estilo código', { hint: 'Técnica y tecnológica, como el código.', demo: font('JetBrains Mono', { weight: 500 }) }),
+  o('maquina', 'Máquina de escribir', 'worn typewriter typography (like Special Elite)', 'tipografía de máquina de escribir gastada (como Special Elite)', { hint: 'Documentos viejos, cartas y misterio.', demo: font('Special Elite') }),
   o('script', 'Caligráfica', 'elegant flowing script typography', 'tipografía caligráfica elegante y fluida', { hint: 'Invitaciones, bodas y romance.', demo: font('Great Vibes') }),
   o('manuscrita', 'Escrita a mano', 'casual handwritten typography', 'tipografía informal escrita a mano', { hint: 'Personal, artesanal y espontánea.', demo: font('Caveat', { weight: 700 }) }),
   o('pincel', 'Pincel / marcador', 'expressive brush marker lettering', 'letras expresivas hechas con pincel o marcador', { hint: 'Energía urbana y juvenil.', demo: font('Permanent Marker') }),
@@ -27,11 +28,18 @@ export const TIPOGRAFIAS: Option[] = [
   o('retro70', 'Retro 70s', 'chunky groovy 1970s retro typography', 'tipografía retro de los 70, gruesa y ondulada', { hint: 'Groovy y nostálgica.', demo: font('Shrikhand') }),
   o('pixel', 'Pixel', 'pixelated 8-bit bitmap typography', 'tipografía pixelada de 8 bits', { hint: 'Videojuegos retro.', demo: font('Press Start 2P', { upper: true }) }),
   o('stencil', 'Stencil', 'industrial stencil typography', 'tipografía stencil industrial', { hint: 'Militar, industrial, urbano.', demo: font('Stardos Stencil', { weight: 700, upper: true }) }),
+  o('extra-negrita', 'Grotesca extra negrita', 'heavy ultra-bold grotesque sans-serif typography (like Archivo Black)', 'tipografía sans serif grotesca extra negrita (como Archivo Black)', { hint: 'Titulares que gritan: deportes, música, ofertas.', demo: font('Archivo Black', { upper: true }) }),
+  o('inflada', 'Inflada / burbuja', 'puffy inflated 3D bubble lettering', 'letras infladas en 3D, como globos', { hint: 'Divertida y actual, muy usada en redes.', demo: font('Rubik Bubbles') }),
+  o('contorno', 'Contorno', 'outlined hollow display lettering', 'letras huecas, solo con contorno', { hint: 'Liviana y gráfica, ideal combinada con letras rellenas.', demo: font('Bungee Outline', { upper: true }) }),
+  o('neon-tipo', 'Neón', 'glowing neon tube lettering', 'letras de tubo de neón encendidas', { hint: 'Bares, noche y carteles luminosos.', demo: font('Tilt Neon') }),
+  o('futurista-tipo', 'Futurista', 'futuristic sci-fi typography (like Orbitron)', 'tipografía futurista de ciencia ficción (como Orbitron)', { hint: 'Tecnología, gaming y ciencia ficción.', demo: font('Orbitron', { weight: 700, upper: true }) }),
+  o('western', 'Western / circo', 'ornate Western wood-type lettering, vintage circus poster style', 'letras western de tipos de madera, estilo afiche de circo antiguo', { hint: 'Lejano oeste, circo y ferias.', demo: font('Rye', { upper: true }) }),
+  o('graffiti-tipo', 'Graffiti', 'spray paint graffiti lettering', 'letras de graffiti en aerosol', { hint: 'Urbana, rebelde y callejera.', demo: font('Rubik Spray Paint') }),
 ];
 
 /** Piezas de diseño: definen el uso declarado y la proporción sugerida. Ver docs/03-diseno-grafico.md §10. */
 export const PIEZAS: Option[] = [
-  o('logo', 'Logo', 'a simple, flat professional logo in scalable vector style', 'un logo profesional simple y plano en estilo vectorial escalable', { hint: 'La firma visual de una marca.', demo: diagram('piece-logo'), meta: { ratio: [1, 1], purpose: 'brand logo', avoid: ['mockup', 'photorealistic details'] } }),
+  o('logo', 'Logo', 'a simple, flat professional logo in scalable vector style', 'un logo profesional simple y plano en estilo vectorial escalable', { hint: 'La firma visual de una marca.', demo: diagram('piece-logo'), meta: { ratio: [1, 1], purpose: 'brand logo', avoid: ['mockup', 'photorealistic details'], allow: ['logo'] } }),
   o('icono', 'Ícono / app', 'an app icon design with a single bold symbol', 'un diseño de ícono de app', { hint: 'Un símbolo simple que se entienda en tamaño chico.', demo: diagram('piece-icon'), meta: { ratio: [1, 1], purpose: 'app icon' } }),
   o('post', 'Post para redes', 'a social media post design', 'un diseño de post para redes sociales', { hint: 'Un mensaje claro que frene el scroll.', demo: diagram('piece-post'), meta: { ratio: [4, 5], purpose: 'Instagram feed post' } }),
   o('historia', 'Historia / Reel', 'a vertical social media story design', 'un diseño vertical para historia de redes', { hint: 'Vertical; deja libre arriba y abajo.', demo: diagram('piece-story'), meta: { ratio: [9, 16], purpose: 'Instagram story' } }),
@@ -41,9 +49,17 @@ export const PIEZAS: Option[] = [
   o('portada-album', 'Portada de álbum', 'an album cover artwork', 'una portada de álbum musical', { hint: 'Cuadrada; tiene que funcionar chiquita en las apps.', demo: diagram('piece-album'), meta: { ratio: [1, 1], purpose: 'music album cover' } }),
   o('miniatura', 'Miniatura de YouTube', 'a YouTube thumbnail design', 'un diseño de miniatura de YouTube', { hint: 'Sujeto grande, 3 o 4 palabras y mucho contraste.', demo: diagram('piece-thumb'), meta: { ratio: [16, 9], purpose: 'YouTube thumbnail' } }),
   o('banner', 'Banner web', 'a website banner design', 'un diseño de banner web', { hint: 'Horizontal, con espacio para texto a un costado.', demo: diagram('piece-banner'), meta: { ratio: [16, 9], purpose: 'website hero banner' } }),
-  o('tarjeta', 'Tarjeta personal', 'a business card design', 'un diseño de tarjeta personal', { hint: 'Mínimo texto y mucho aire.', demo: diagram('piece-card'), meta: { ratio: [7, 4], purpose: 'business card' } }),
+  o('tarjeta', 'Tarjeta personal', 'a business card design', 'un diseño de tarjeta personal', { hint: 'Mínimo texto y mucho aire.', demo: diagram('piece-card'), meta: { ratio: [7, 4], purpose: 'business card', allow: ['logo'] } }),
   o('sticker', 'Sticker', 'a die-cut sticker design with a white border', 'un diseño de sticker troquelado con borde blanco', { hint: 'Contorno blanco y fondo liso.', demo: diagram('piece-sticker'), meta: { ratio: [1, 1], purpose: 'sticker' } }),
-  o('etiqueta', 'Etiqueta / packaging', 'a product label and packaging design', 'un diseño de etiqueta y packaging de producto', { hint: 'Para frascos, cajas y bolsas.', demo: diagram('piece-label'), meta: { ratio: [4, 5], purpose: 'product packaging label' } }),
+  o('menu', 'Menú', 'a restaurant menu design with clear sections', 'un diseño de menú de restaurante con secciones claras', { hint: 'Pocos platos y textos cortos: la IA se equivoca con listas largas.', demo: diagram('piece-menu'), meta: { ratio: [2, 3], purpose: 'restaurant menu' } }),
+  o('invitacion', 'Invitación', 'an elegant invitation card design', 'un diseño de tarjeta de invitación elegante', { hint: 'Cumpleaños, casamientos y eventos.', demo: diagram('piece-invite'), meta: { ratio: [3, 4], purpose: 'invitation card' } }),
+  o('infografia', 'Infografía', 'an infographic with clear sections, icons and simple charts', 'una infografía con secciones claras, íconos y gráficos simples', { hint: 'Pocos datos, bien grandes. Revisá siempre los números.', demo: diagram('piece-infographic'), meta: { ratio: [2, 3], purpose: 'infographic' } }),
+  o('remera', 'Estampa para remera', 'a t-shirt graphic print design', 'un diseño de estampa para remera', { hint: 'El dibujo solo, sin la remera. Para verlo puesto, pasá a Avanzado y elegí «Cómo se muestra».', demo: diagram('piece-tshirt'), meta: { ratio: [1, 1], purpose: 't-shirt print', avoid: ['mockup'] } }),
+  o('patron', 'Patrón continuo', 'a seamless repeating pattern tile', 'un patrón continuo que se repite sin cortes', { hint: 'Para telas, papeles de regalo y fondos.', demo: diagram('piece-pattern'), meta: { ratio: [1, 1], purpose: 'seamless pattern', tile: true } }),
+  o('fondo-pantalla', 'Fondo de pantalla', 'a phone wallpaper design', 'un diseño de fondo de pantalla para celular', { hint: 'Dejá libre la parte de arriba, donde va la hora.', demo: diagram('piece-wallpaper'), meta: { ratio: [9, 16], purpose: 'phone wallpaper' } }),
+  o('web', 'Página web', 'a modern website landing page UI design', 'un diseño de interfaz de página web moderna', { hint: 'Una idea visual de cómo se vería tu sitio.', demo: diagram('piece-hero'), meta: { ratio: [16, 9], purpose: 'website landing page' } }),
+  o('podcast', 'Portada de podcast', 'a podcast cover art design', 'un diseño de portada de podcast', { hint: 'Cuadrada y legible en tamaño chico.', demo: diagram('piece-podcast'), meta: { ratio: [1, 1], purpose: 'podcast cover' } }),
+  o('etiqueta', 'Etiqueta / packaging', 'a product label and packaging design', 'un diseño de etiqueta y packaging de producto', { hint: 'Para frascos, cajas y bolsas.', demo: diagram('piece-label'), meta: { ratio: [4, 5], purpose: 'product packaging label', allow: ['logo'] } }),
 ];
 
 /** Estilos de diseño gráfico (corrientes). */
@@ -68,6 +84,14 @@ export const ESTILOS_DISENO: Option[] = [
   D('d-glass', 'Glassmorphism', 'glassmorphism design, frosted translucent panels, soft colorful blur', 'diseño glassmorphism, paneles translúcidos esmerilados, desenfoque colorido', 'Vidrio esmerilado sobre colores difusos.', ['#a18cd1', '#fbc2eb']),
   D('d-grunge', 'Grunge / punk', 'grunge punk zine aesthetic, ripped paper, photocopy texture', 'estética fanzine grunge punk, papel rasgado, textura de fotocopia', 'Fotocopia, recortes y actitud.', ['#2b2b2b', '#e5e5e5']),
   D('d-maximal', 'Maximalista', 'maximalist design, layered patterns, rich colors and ornaments', 'diseño maximalista, patrones superpuestos, colores ricos y ornamentos', 'Lleno de capas, color y detalle.', ['#9d0208', '#ffba08'], ['d-minimal']),
+  D('d-escandinavo', 'Escandinavo', 'Scandinavian design, calm neutral colors, simple functional shapes', 'diseño escandinavo, colores neutros y calmos, formas simples y funcionales', 'Claro, cálido y funcional.', ['#f5f1ea', '#9caf88']),
+  D('d-japones', 'Minimalismo japonés', 'Japanese minimalist design, asymmetric balance, ample empty space, subtle details', 'diseño minimalista japonés, equilibrio asimétrico, mucho espacio vacío, detalles sutiles', 'Sereno, preciso y con mucho vacío.', ['#f4efe6', '#bc002d']),
+  D('d-acid', 'Acid graphics', 'acid graphics style, chrome and liquid shapes, rave-inspired experimental typography', 'estilo acid graphics, formas cromadas y líquidas, tipografía experimental inspirada en las raves', 'Electrónica, cromo y tipografía rara.', ['#c6ff00', '#111111']),
+  D('d-kawaii', 'Kawaii', 'kawaii design, cute characters, pastel colors, rounded shapes', 'diseño kawaii, personajes tiernos, colores pastel, formas redondeadas', 'Tierno, pastel y japonés.', ['#ffc8dd', '#cdb4db']),
+  D('d-boho', 'Boho', 'boho design, earthy tones, hand-drawn botanical details, organic arches', 'diseño boho, tonos tierra, detalles botánicos dibujados a mano, arcos orgánicos', 'Natural, cálido y artesanal.', ['#d4a373', '#ccd5ae']),
+  D('d-doodle', 'Garabatos (doodle)', 'hand-drawn doodle style, playful sketchy icons and scribbles', 'estilo doodle dibujado a mano, íconos y garabatos lúdicos', 'Como dibujado en un cuaderno.', ['#ffffff', '#3a86ff']),
+  D('d-aurora', 'Degradados aurora', 'soft mesh gradient aurora background, modern tech aesthetic', 'fondo de degradados suaves tipo aurora, estética tecnológica moderna', 'Manchas de color difuminadas, muy de apps.', ['#7f5af0', '#2cb67d']),
+  D('d-tipografico', 'Tipográfico experimental', 'experimental typographic design, type as image, bold scale contrasts', 'diseño tipográfico experimental, la letra como imagen, contrastes de escala fuertes', 'Las letras son las protagonistas.', ['#111111', '#ff5400']),
   D('d-infantil', 'Infantil / lúdico', 'playful kid-friendly design, rounded shapes, cheerful colors', 'diseño lúdico e infantil, formas redondeadas, colores alegres', 'Alegre y redondeado.', ['#ffb703', '#8ecae6']),
 ];
 
@@ -108,10 +132,38 @@ export const ELEMENTOS: Option[] = [
 /** Fondo. */
 export const FONDOS: Option[] = [
   o('f-blanco', 'Blanco liso', 'plain white background', 'fondo blanco liso', { demo: { kind: 'swatch', colors: ['#ffffff'] } }),
-  o('f-transparente', 'Transparente', 'transparent background, isolated subject, no shadow', 'fondo transparente, sujeto aislado, sin sombra', { hint: 'Para logos y stickers. Solo algunas IAs lo generan de verdad (ChatGPT por API).', demo: { kind: 'texture', name: 'checker' } }),
+  o('f-transparente', 'Transparente', 'transparent background, isolated subject, no shadow', 'fondo transparente, sujeto aislado, sin sombra', { hint: 'Para logos y stickers. Solo algunas IAs lo generan de verdad (ChatGPT por API).', demo: { kind: 'texture', name: 'checker' }, conflicts: ['m-mesa', 'm-pared', 'm-mano', 'm-celular', 'm-remera', 'm-packaging', 'm-calle'] }),
   o('f-color', 'Color sólido', 'solid color background from the palette', 'fondo de color sólido de la paleta', { demo: { kind: 'swatch', colors: ['#6d4aff'] } }),
   o('f-degradado', 'Degradado', 'smooth gradient background', 'fondo degradado suave', { demo: { kind: 'gradient', colors: ['#ff9a8b', '#6d4aff'] } }),
   o('f-oscuro', 'Oscuro', 'dark background', 'fondo oscuro', { demo: { kind: 'swatch', colors: ['#111111'] } }),
   o('f-textura', 'Con textura', 'subtle textured background', 'fondo con textura sutil', { demo: { kind: 'texture', name: 'paper' } }),
   o('f-foto', 'Foto ambientada', 'photographic scene background', 'fondo con una escena fotográfica', { demo: img('Fondo fotográfico', ['#7a9e7e', '#e9d8a6']) }),
+];
+
+/** Personalidad de marca: cómo tiene que "sonar" la pieza. */
+const pg = (colors: string[], glyph: string): Demo => ({ kind: 'gradient', colors, glyph });
+export const PERSONALIDADES: Option[] = [
+  o('confiable', 'Confiable', 'trustworthy', 'confiable', { hint: 'Bancos, salud, servicios profesionales.', demo: pg(['#0a2342', '#2c6e9b'], '🤝') }),
+  o('divertida', 'Divertida', 'fun, playful', 'divertida, juguetona', { hint: 'Juguetes, snacks, eventos.', demo: pg(['#ffbe0b', '#ff006e'], '🎉') }),
+  o('elegante', 'Elegante', 'elegant, refined', 'elegante, refinada', { hint: 'Moda, joyas, vinos.', demo: pg(['#111111', '#c9a227'], '💎') }),
+  o('audaz', 'Audaz', 'bold, daring', 'audaz, atrevida', { hint: 'Deportes, energía, música.', demo: pg(['#d00000', '#000000'], '⚡') }),
+  o('cercana', 'Cercana', 'warm, approachable', 'cálida, cercana', { hint: 'Negocios de barrio, comunidad, educación.', demo: pg(['#f4a261', '#e76f51'], '😊') }),
+  o('innovadora', 'Innovadora', 'innovative, forward-thinking', 'innovadora, de vanguardia', { hint: 'Tecnología y startups.', demo: pg(['#6d4aff', '#00c2ff'], '🚀') }),
+  o('natural', 'Natural', 'natural, wholesome', 'natural, saludable', { hint: 'Orgánico, bienestar, plantas.', demo: pg(['#a7c957', '#386641'], '🌿') }),
+  o('artesanal', 'Artesanal', 'handcrafted, authentic', 'artesanal, auténtica', { hint: 'Panaderías, cervecerías, hecho a mano.', demo: pg(['#bc6c25', '#606c38'], '🧵') }),
+  o('juvenil', 'Juvenil', 'youthful, trendy', 'juvenil, a la moda', { hint: 'Público joven y redes sociales.', demo: pg(['#ff70a6', '#70d6ff'], '✨') }),
+  o('seria', 'Seria', 'serious, authoritative', 'seria, con autoridad', { hint: 'Instituciones, legales, finanzas.', demo: pg(['#343a40', '#6c757d'], '🏛️') }),
+];
+
+/** Cómo se presenta la pieza terminada: sola o en un mockup realista. */
+const MOCKUP = ['mockup', 'photorealistic details'];
+export const PRESENTACIONES: Option[] = [
+  o('m-plano', 'Solo el diseño', 'shown flat and straight-on, artwork only, filling the frame', 'mostrado plano y de frente, solo el diseño ocupando todo el cuadro', { hint: 'Recomendado si lo vas a usar o imprimir.', demo: diagram('mock-flat'), meta: { avoid: ['mockup'] } }),
+  o('m-mesa', 'Impreso sobre una mesa', 'presented as a realistic printed mockup lying on a table, soft natural light', 'presentado como un mockup realista impreso, apoyado sobre una mesa, con luz natural suave', { demo: diagram('mock-table'), meta: { allow: MOCKUP } }),
+  o('m-pared', 'Colgado en una pared', 'presented as a realistic framed mockup hanging on a wall in a stylish room', 'presentado como un mockup realista enmarcado y colgado en la pared de un ambiente con estilo', { demo: diagram('mock-wall'), meta: { allow: MOCKUP } }),
+  o('m-mano', 'En la mano', 'presented as a realistic mockup held in a hand', 'presentado como un mockup realista sostenido en una mano', { demo: diagram('mock-hand'), meta: { allow: MOCKUP } }),
+  o('m-celular', 'En un celular', 'presented as a realistic mockup on a smartphone screen', 'presentado como un mockup realista en la pantalla de un celular', { demo: diagram('mock-phone'), meta: { allow: MOCKUP } }),
+  o('m-remera', 'En una remera', 'presented as a realistic mockup printed on a t-shirt worn by a person', 'presentado como un mockup realista estampado en una remera que lleva puesta una persona', { demo: diagram('mock-shirt'), meta: { allow: MOCKUP } }),
+  o('m-packaging', 'En un producto', 'presented as a realistic mockup printed on product packaging', 'presentado como un mockup realista impreso en el packaging de un producto', { demo: diagram('mock-package'), meta: { allow: MOCKUP } }),
+  o('m-calle', 'En la calle', 'presented as a realistic mockup on a street billboard', 'presentado como un mockup realista en un cartel de la calle', { demo: diagram('mock-street'), meta: { allow: MOCKUP } }),
 ];

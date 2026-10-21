@@ -81,7 +81,14 @@ export function findSaved(id: string): SavedPrompt | undefined {
 export interface Prefs {
   modelId: string;
   advanced: boolean;
+  /** Foto de muestra sobre la que se ven los filtros. */
+  samplePhoto: string;
 }
 
-export const getPrefs = (): Prefs => ({ modelId: 'generico', advanced: false, ...read<Partial<Prefs>>(KEYS.prefs, {}) });
+export const getPrefs = (): Prefs => ({
+  modelId: 'generico',
+  advanced: false,
+  samplePhoto: 'retrato',
+  ...read<Partial<Prefs>>(KEYS.prefs, {}),
+});
 export const setPrefs = (p: Partial<Prefs>) => write(KEYS.prefs, { ...getPrefs(), ...p });

@@ -1,9 +1,10 @@
 import type { Area } from '../../../engine/types';
 import { ATMOSFERAS, EVITAR, FORMATOS, PALETAS, TEXTURAS } from '../library/color';
-import { ELEMENTOS, ESTILOS_DISENO, FONDOS, LAYOUTS, PIEZAS, TIPOGRAFIAS, TIPOS_LOGO } from '../library/diseno';
-import { ESTILOS } from '../library/estilos';
+import { ELEMENTOS, ESTILOS_DISENO, FONDOS, LAYOUTS, PERSONALIDADES, PIEZAS, PRESENTACIONES, TIPOGRAFIAS, TIPOS_LOGO } from '../library/diseno';
+import { ESTILOS, ESTILOS_GROUPS } from '../library/estilos';
 
-const SIN_DIAGRAMACION = ['flyer', 'post', 'historia', 'poster', 'portada-libro', 'portada-album', 'miniatura', 'banner', 'tarjeta', 'etiqueta'];
+/** Piezas con varios elementos que ordenar (en un logo, un ícono o un patrón no hace falta elegir diagramación). */
+const CON_DIAGRAMACION = ['flyer', 'post', 'historia', 'poster', 'portada-libro', 'portada-album', 'miniatura', 'banner', 'tarjeta', 'etiqueta', 'menu', 'invitacion', 'infografia', 'web', 'podcast'];
 
 export const diseno: Area = {
   id: 'diseno',
@@ -27,6 +28,13 @@ export const diseno: Area = {
       type: 'single',
       required: true,
       options: PIEZAS,
+      groups: [
+        { id: 'marca', label: { es: 'Marca' }, optionIds: ['logo', 'icono', 'tarjeta', 'sticker', 'etiqueta'] },
+        { id: 'redes', label: { es: 'Redes y video' }, optionIds: ['post', 'historia', 'miniatura', 'podcast', 'fondo-pantalla'] },
+        { id: 'impresos', label: { es: 'Impresos' }, optionIds: ['flyer', 'poster', 'menu', 'invitacion', 'infografia', 'portada-libro', 'portada-album'] },
+        { id: 'web', label: { es: 'Web' }, optionIds: ['banner', 'web'] },
+        { id: 'estampas', label: { es: 'Estampas y patrones' }, optionIds: ['remera', 'patron'] },
+      ],
     },
     {
       id: 'tema',
@@ -56,6 +64,16 @@ export const diseno: Area = {
       options: ESTILOS_DISENO,
     },
     {
+      id: 'personalidad',
+      title: { es: 'Personalidad de marca' },
+      why: { es: 'Cómo querés que se sienta la marca. Ayuda a la IA a elegir formas, colores y letras coherentes. Hasta 2.' },
+      role: 'mood',
+      type: 'multi',
+      max: 2,
+      options: PERSONALIDADES,
+      template: { en: 'brand personality: {value}', es: 'personalidad de marca: {value}' },
+    },
+    {
       id: 'textos',
       title: { es: 'Textos de la pieza' },
       why: { es: 'Lo que tiene que estar escrito, tal cual. En un logo, poné acá el nombre de la marca. Textos cortos salen mejor: 2 a 4 palabras por línea.' },
@@ -75,6 +93,12 @@ export const diseno: Area = {
       type: 'multi',
       max: 2,
       options: TIPOGRAFIAS,
+      groups: [
+        { id: 'serif', label: { es: 'Con serifa' }, optionIds: ['serif-clasica', 'didona', 'slab'] },
+        { id: 'sans', label: { es: 'Sin serifa' }, optionIds: ['geometrica', 'grotesca', 'humanista', 'redondeada', 'condensada', 'extra-negrita', 'mono'] },
+        { id: 'mano', label: { es: 'A mano' }, optionIds: ['script', 'manuscrita', 'pincel', 'graffiti-tipo'] },
+        { id: 'decorativas', label: { es: 'Decorativas' }, optionIds: ['display', 'inflada', 'contorno', 'neon-tipo', 'futurista-tipo', 'retro70', 'deco', 'western', 'gotica', 'maquina', 'pixel', 'stencil'] },
+      ],
     },
     {
       id: 'color',
@@ -91,7 +115,7 @@ export const diseno: Area = {
       role: 'layout',
       type: 'single',
       options: LAYOUTS,
-      showIf: { step: 'pieza', in: SIN_DIAGRAMACION },
+      showIf: { step: 'pieza', in: CON_DIAGRAMACION },
     },
     {
       id: 'elementos',
@@ -111,6 +135,7 @@ export const diseno: Area = {
       type: 'single',
       level: 'advanced',
       options: ESTILOS,
+      groups: ESTILOS_GROUPS,
       template: { en: 'imagery in {value}', es: 'imágenes en {value}' },
     },
     {
@@ -120,6 +145,15 @@ export const diseno: Area = {
       role: 'background',
       type: 'single',
       options: FONDOS,
+    },
+    {
+      id: 'presentacion',
+      title: { es: 'Cómo se muestra' },
+      why: { es: 'Solo el diseño, o ya puesto en un mockup realista para mostrárselo a un cliente o publicarlo.' },
+      role: 'composition',
+      type: 'single',
+      level: 'advanced',
+      options: PRESENTACIONES,
     },
     {
       id: 'atmosfera',

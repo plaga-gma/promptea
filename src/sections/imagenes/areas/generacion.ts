@@ -1,6 +1,8 @@
 import type { Area } from '../../../engine/types';
 import { ATMOSFERAS, EVITAR, FORMATOS, PALETAS, TEXTURAS } from '../library/color';
 import { ESTILOS, ESTILOS_GROUPS, MEDIOS } from '../library/estilos';
+import { FILTROS, FILTROS_GROUPS } from '../library/edicion';
+import { CAMARAS, CLIMAS, EPOCAS, EXPRESIONES, MATERIALES } from '../library/escena';
 import { ANGULOS, COMPOSICION, ILUMINACION, LENTES, PLANOS } from '../library/foto';
 
 export const generacion: Area = {
@@ -44,12 +46,41 @@ export const generacion: Area = {
       placeholder: { es: 'Ej.: leyendo un libro sentado en un tronco' },
     },
     {
+      id: 'expresion',
+      title: { es: 'Expresión y pose' },
+      why: { es: 'Si hay personas o animales, la expresión cambia toda la historia. Hasta 2.' },
+      role: 'action',
+      type: 'multi',
+      max: 2,
+      level: 'advanced',
+      options: EXPRESIONES,
+    },
+    {
       id: 'entorno',
       title: { es: '¿Dónde está?' },
       why: { es: 'El lugar y la época crean el contexto. Sin entorno, la IA inventa uno.' },
       role: 'setting',
       type: 'text',
       placeholder: { es: 'Ej.: en un bosque nevado al amanecer' },
+    },
+    {
+      id: 'epoca',
+      title: { es: 'Época' },
+      why: { es: 'Ropa, objetos, autos y arquitectura cambian según la época. Una sola palabra transporta toda la escena.' },
+      role: 'setting',
+      type: 'single',
+      level: 'advanced',
+      options: EPOCAS,
+      template: { en: 'set in {value}', es: 'ambientado en {value}' },
+    },
+    {
+      id: 'clima',
+      title: { es: 'Clima y estación' },
+      why: { es: 'La lluvia, la niebla o la nieve suman atmósfera y textura sin esfuerzo.' },
+      role: 'setting',
+      type: 'single',
+      level: 'advanced',
+      options: CLIMAS,
     },
     {
       id: 'estilo',
@@ -120,6 +151,17 @@ export const generacion: Area = {
       options: LENTES,
     },
     {
+      id: 'camara',
+      title: { es: 'Cámara y película' },
+      why: { es: 'Nombrar la cámara o el rollo es la forma más rápida de pedir un look fotográfico. Mirá cada uno sobre una foto.' },
+      role: 'camera',
+      type: 'single',
+      level: 'advanced',
+      options: CAMARAS,
+      showIf: { step: 'medio', in: ['foto'] },
+      template: { en: 'shot on {value}', es: 'tomada con {value}' },
+    },
+    {
       id: 'textura',
       title: { es: 'Textura y acabado' },
       why: { es: 'El toque final: grano de película, papel, brillo. Hasta 2.' },
@@ -128,6 +170,27 @@ export const generacion: Area = {
       max: 2,
       level: 'advanced',
       options: TEXTURAS,
+    },
+    {
+      id: 'material',
+      title: { es: 'Material' },
+      why: { es: 'Para objetos, productos y 3D: de qué está hecho lo que se ve. Hasta 2.' },
+      role: 'texture',
+      type: 'multi',
+      max: 2,
+      level: 'advanced',
+      options: MATERIALES,
+      template: { en: 'made of {value}', es: 'hecho de {value}' },
+    },
+    {
+      id: 'filtro',
+      title: { es: 'Filtro o look de color' },
+      why: { es: 'Como un filtro de Instagram, pero pedido desde el principio. Cada ejemplo muestra el filtro aplicado sobre una foto.' },
+      role: 'style',
+      type: 'single',
+      level: 'advanced',
+      options: FILTROS,
+      groups: FILTROS_GROUPS,
     },
     {
       id: 'evitar',

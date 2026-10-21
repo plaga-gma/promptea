@@ -17,10 +17,10 @@ export function segmentsOf(spec: PromptSpec, role: SegmentRole): Segment[] {
 }
 
 /** Texto ya armado con la plantilla del paso (para prompts en lenguaje natural). */
-export function roleText(spec: PromptSpec, role: SegmentRole, lang: Lang): string {
+export function roleText(spec: PromptSpec, role: SegmentRole, lang: Lang, separator = '; '): string {
   return segmentsOf(spec, role)
     .map((s) => s.text[lang])
-    .join('; ');
+    .join(separator);
 }
 
 /** Solo las partes elegidas, sin plantilla (para prompts etiquetados o por etiquetas). */
@@ -43,8 +43,9 @@ export function leadSentence(spec: PromptSpec, lang: Lang): string {
   const medium = roleText(spec, 'medium', lang);
   const subject = roleText(spec, 'subject', lang);
   let lead = medium && subject ? `${medium} ${CONNECTOR[spec.mode][lang]} ${subject}` : medium || subject;
-  const action = roleText(spec, 'action', lang);
-  const setting = roleText(spec, 'setting', lang);
+  // Dentro de la primera oración, los pasos se encadenan con comas: "…, leyendo, con una sonrisa, en un bosque, ambientado en los años 20".
+  const action = roleText(spec, 'action', lang, ', ');
+  const setting = roleText(spec, 'setting', lang, ', ');
   if (action) lead += `, ${action}`;
   if (setting) lead += `, ${setting}`;
   return sentence(lead);

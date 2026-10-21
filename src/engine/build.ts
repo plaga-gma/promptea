@@ -89,7 +89,10 @@ export function buildSpec(area: Area, selections: Selections, options: BuildOpti
     literal: false,
     copy: [],
     needsSecondImage: false,
+    tile: false,
+    allowed: [],
   };
+  const allowed = spec.allowed;
 
   // En edición, el texto "qué cambiar" se inyecta en la operación elegida.
   const targetStep = area.steps.find((s) => s.id === 'target');
@@ -122,10 +125,10 @@ export function buildSpec(area: Area, selections: Selections, options: BuildOpti
       const chosen = selectedOptions(step, selections);
       if (chosen.length) parts = chosen.map((o) => o.prompt);
       else if (record?.harmony_en && record.harmony_es) parts = [{ en: record.harmony_en, es: record.harmony_es }];
-      for (const o of chosen) collectMeta(o, spec);
+      for (const o of chosen) collectMeta(o, spec, allowed);
     } else {
       const chosen = selectedOptions(step, selections);
-      for (const o of chosen) collectMeta(o, spec);
+      for (const o of chosen) collectMeta(o, spec, allowed);
       parts = chosen.map((o) => fillTarget(o.prompt, target));
     }
 
@@ -140,15 +143,19 @@ export function buildSpec(area: Area, selections: Selections, options: BuildOpti
   }
 
   spec.segments.sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role));
-  spec.avoid = [...new Set(spec.avoid)];
+  spec.avoid = [...new Set(spec.avoid)].filter((a) => !allowed.includes(a));
+  // Un mockup es una foto de un ambiente: --tile la volvería un mosaico.
+  if (allowed.includes('mockup')) spec.tile = false;
   // Si se pidió texto en la imagen, no tiene sentido evitar "texto".
   if (spec.copy.length) spec.avoid = spec.avoid.filter((a) => !/^(text|letters|lettering|words)$/i.test(a));
   return spec;
 }
 
-function collectMeta(option: Option, spec: PromptSpec) {
+function collectMeta(option: Option, spec: PromptSpec, allowed: string[]) {
   const meta = option.meta;
   if (!meta) return;
+  if (meta.allow) allowed.push(...meta.allow);
+  if (meta.tile) spec.tile = true;
   if (meta.ratio) spec.ratio = meta.ratio;
   if (meta.avoid) spec.avoid.push(...meta.avoid);
   if (meta.literal) spec.literal = true;

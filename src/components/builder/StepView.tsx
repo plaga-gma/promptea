@@ -1,13 +1,17 @@
-import { useState } from 'preact/hooks';
+import { useContext, useState } from 'preact/hooks';
 import { harmonyPalette, bestTextPair, HARMONIES, type Harmony } from '../../engine/color';
 import type { Option, SelectionValue, Step } from '../../engine/types';
 import { t } from '../../i18n/es';
+import { url } from '../../lib/url';
 import { Demo } from '../demos/Demo';
+import { DemoContext, SAMPLE_PHOTOS } from '../demos/photos';
 
 interface Props {
   step: Step;
   index: number;
   value: SelectionValue | undefined;
+  /** Reemplaza el ejemplo del paso de texto libre (depende de otra elección). */
+  placeholder?: string;
   onChange: (value: SelectionValue | undefined) => void;
 }
 
@@ -23,7 +27,23 @@ function OptionCard({ option, selected, onClick }: { option: Option; selected: b
   );
 }
 
-function OptionGrid({ step, value, onChange }: Omit<Props, 'index'>) {
+/** Elegir sobre qué foto se ven los filtros. La elección se comparte con todos los pasos. */
+function SamplePicker() {
+  const { photo, setPhoto } = useContext(DemoContext);
+  return (
+    <div class="samples" role="group" aria-label={t.builder.samplePhoto}>
+      <span class="small muted">{t.builder.samplePhoto}:</span>
+      {SAMPLE_PHOTOS.map((p) => (
+        <button key={p.id} type="button" class="sample" aria-pressed={photo === p.id} onClick={() => setPhoto(p.id)}>
+          <img src={url(`/${p.src}`)} alt="" loading="lazy" decoding="async" />
+          {p.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function OptionGrid({ step, value, onChange }: Omit<Props, 'index' | 'placeholder'>) {
   const [group, setGroup] = useState<string>('all');
   const [expanded, setExpanded] = useState(false);
   const selected = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
@@ -46,8 +66,11 @@ function OptionGrid({ step, value, onChange }: Omit<Props, 'index'>) {
   const collapsible = !inGroup && filtered.length > COLLAPSED + 2;
   const shown = collapsible && !expanded ? filtered.slice(0, COLLAPSED) : filtered;
 
+  const onPhoto = options.some((o) => o.demo?.kind === 'filter' || o.demo?.kind === 'compare' || o.demo?.kind === 'strength');
+
   return (
     <>
+      {onPhoto && <SamplePicker />}
       {step.groups && (
         <div class="groups" role="toolbar" aria-label="Filtrar">
           <button type="button" class="chip" aria-pressed={group === 'all'} onClick={() => setGroup('all')}>
@@ -74,7 +97,7 @@ function OptionGrid({ step, value, onChange }: Omit<Props, 'index'>) {
   );
 }
 
-function ColorStep({ step, value, onChange }: Omit<Props, 'index'>) {
+function ColorStep({ step, value, onChange }: Omit<Props, 'index' | 'placeholder'>) {
   const record = value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
   const [open, setOpen] = useState(Boolean(record && !record.palette && record.colors));
   const [base, setBase] = useState('#6d4aff');
@@ -142,7 +165,7 @@ function ColorStep({ step, value, onChange }: Omit<Props, 'index'>) {
   );
 }
 
-export function StepView({ step, index, value, onChange }: Props) {
+export function StepView({ step, index, value, placeholder, onChange }: Props) {
   const hasValue =
     value !== undefined && (typeof value === 'string' ? value.trim() !== '' : Array.isArray(value) ? value.length > 0 : Object.values(value).some((v) => v?.trim()));
   const fields = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -175,7 +198,7 @@ export function StepView({ step, index, value, onChange }: Props) {
           <textarea
             rows={2}
             maxLength={300}
-            placeholder={step.placeholder?.es}
+            placeholder={placeholder ?? step.placeholder?.es}
             value={typeof value === 'string' ? value : ''}
             onInput={(e) => onChange((e.currentTarget as HTMLTextAreaElement).value || undefined)}
             aria-labelledby={`t-${step.id}`}

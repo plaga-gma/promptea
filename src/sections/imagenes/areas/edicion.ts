@@ -1,7 +1,7 @@
 import type { Area } from '../../../engine/types';
 import { EVITAR, FORMATOS } from '../library/color';
-import { FILTROS, INTENSIDADES, OPERACIONES, PRESERVAR } from '../library/edicion';
-import { ESTILOS } from '../library/estilos';
+import { DANOS, DUOTONOS, EPOCAS, FILTROS, FILTROS_GROUPS, INTENSIDADES, OPERACIONES, POSTER_TRAP, PRESERVAR } from '../library/edicion';
+import { ESTILOS, ESTILOS_GROUPS } from '../library/estilos';
 import { ILUMINACION } from '../library/foto';
 
 export const edicion: Area = {
@@ -15,7 +15,7 @@ export const edicion: Area = {
   seo: {
     title: 'Generador de prompts para editar fotos con IA',
     description:
-      'Prompts para quitar fondos, borrar objetos, aplicar filtros, restaurar y retocar fotos con ChatGPT, Gemini, Meta AI y FLUX. Elegí el efecto viendo ejemplos.',
+      'Prompts para quitar o desenfocar fondos, ampliar y restaurar fotos, duotonos, pósters estilo trap y filtros en ChatGPT, Gemini, Meta AI y FLUX. Elegí viendo ejemplos.',
   },
   steps: [
     {
@@ -26,11 +26,30 @@ export const edicion: Area = {
       type: 'single',
       required: true,
       options: OPERACIONES,
+      groups: [
+        { id: 'objetos', label: { es: 'Objetos y fondo' }, optionIds: ['quitar-objeto', 'quitar-fondo', 'cambiar-fondo', 'desenfocar-fondo', 'cambiar-cielo', 'agregar', 'cambiar', 'mover', 'montaje', 'texto'] },
+        { id: 'personas', label: { es: 'Personas' }, optionIds: ['retoque', 'retrato-pro', 'ropa', 'peinado', 'expresion', 'edad'] },
+        { id: 'look', label: { es: 'Estilo y luz' }, optionIds: ['estilo', 'filtro', 'reiluminar', 'estacion', 'angulo-camara'] },
+        { id: 'efectos', label: { es: 'Efectos' }, optionIds: ['duotono', 'color-selectivo', 'envejecer', 'poster-trap', 'doble-exposicion', 'neon', 'dispersion', 'sticker'] },
+        { id: 'arreglar', label: { es: 'Arreglar y mejorar' }, optionIds: ['mejorar', 'ampliar', 'desmovida', 'exposicion', 'restaurar', 'colorear', 'enderezar', 'expandir'] },
+        { id: 'producto', label: { es: 'Producto y dibujo' }, optionIds: ['producto-pro', 'boceto-real'] },
+      ],
+    },
+    {
+      id: 'duo-colores',
+      title: { es: 'Colores del duotono' },
+      why: { es: 'Un color oscuro para las sombras y uno claro para las luces: cuanto más contraste entre los dos, más se lee la imagen.' },
+      role: 'color',
+      type: 'single',
+      required: true,
+      options: DUOTONOS,
+      showIf: { step: 'operacion', in: ['duotono'] },
+      template: { en: 'Duotone colors: {value}', es: 'Colores del duotono: {value}' },
     },
     {
       id: 'target',
-      title: { es: '¿Qué cosa, exactamente?' },
-      why: { es: 'Ubicalo con precisión: "el cartel rojo de la izquierda" funciona mejor que "el cartel".' },
+      title: { es: 'Contalo con tus palabras' },
+      why: { es: 'Sé preciso: "el cartel rojo de la izquierda" funciona mejor que "el cartel".' },
       role: 'operation',
       type: 'text',
       required: true,
@@ -45,19 +64,63 @@ export const edicion: Area = {
       type: 'single',
       required: true,
       options: ESTILOS,
+      groups: ESTILOS_GROUPS,
       showIf: { step: 'operacion', in: ['estilo'] },
       template: { en: 'New style: {value}', es: 'Nuevo estilo: {value}' },
     },
     {
       id: 'filtro',
       title: { es: 'Filtro' },
-      why: { es: 'Mirá el efecto aplicado sobre la imagen de muestra.' },
+      why: { es: 'Cada ejemplo es el filtro aplicado de verdad sobre una foto. Cambiá la foto de muestra para ver cómo queda en otra imagen.' },
       role: 'style',
       type: 'single',
       required: true,
       options: FILTROS,
+      groups: FILTROS_GROUPS,
       showIf: { step: 'operacion', in: ['filtro'] },
       template: { en: 'Look: {value}', es: 'Look: {value}' },
+    },
+    {
+      id: 'danos',
+      title: { es: '¿Qué daños tiene?' },
+      why: { es: 'Nombrar los daños ayuda a que la IA los busque y los arregle todos, no solo los más visibles.' },
+      role: 'operation',
+      type: 'multi',
+      options: DANOS,
+      showIf: { step: 'operacion', in: ['restaurar'] },
+      template: { en: 'pay special attention to {value}', es: 'prestá especial atención a {value}' },
+    },
+    {
+      id: 'epoca',
+      title: { es: '¿De qué época?' },
+      why: { es: 'Cada época tiene su look: el tono, el grano, el papel y hasta el tipo de cámara.' },
+      role: 'style',
+      type: 'single',
+      options: EPOCAS,
+      showIf: { step: 'operacion', in: ['envejecer'] },
+      template: { en: 'Make it look like {value}', es: 'Que parezca {value}' },
+    },
+    {
+      id: 'estilo-poster',
+      title: { es: 'Estilo del póster' },
+      why: { es: 'El trap tiene varias estéticas. Elegir una le da a la IA una dirección de arte clara.' },
+      role: 'style',
+      type: 'single',
+      options: POSTER_TRAP,
+      showIf: { step: 'operacion', in: ['poster-trap'] },
+      template: { en: 'Poster style: {value}', es: 'Estilo del póster: {value}' },
+    },
+    {
+      id: 'textos-poster',
+      title: { es: 'Textos del póster' },
+      why: { es: 'Pocas palabras y en mayúsculas: así la IA las escribe bien. Si lo dejás vacío, el póster sale sin texto.' },
+      role: 'text',
+      type: 'copy',
+      showIf: { step: 'operacion', in: ['poster-trap'] },
+      fields: [
+        { id: 'titulo', label: { es: 'Título' }, placeholder: { es: 'Ej.: NOCHE ETERNA' }, role: { en: 'the big title', es: 'el título grande' } },
+        { id: 'artista', label: { es: 'Nombre del artista' }, placeholder: { es: 'Ej.: LUCA' }, role: { en: 'the artist name', es: 'el nombre del artista' } },
+      ],
     },
     {
       id: 'nueva-luz',
@@ -103,7 +166,7 @@ export const edicion: Area = {
     {
       id: 'intensidad',
       title: { es: 'Intensidad' },
-      why: { es: 'Menos es más: los retoques sutiles se ven profesionales.' },
+      why: { es: 'Menos es más: los retoques sutiles se ven profesionales. Los ejemplos muestran el filtro que elegiste (o uno de muestra) con cada intensidad.' },
       role: 'intensity',
       type: 'single',
       options: INTENSIDADES,

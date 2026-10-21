@@ -67,11 +67,50 @@ export const ROLE_ORDER: SegmentRole[] = [
   'format',
 ];
 
+/**
+ * Capa que se suma sobre la foto de muestra en las demos de filtros.
+ * `bokeh`, `tilt` y `motion` usan una copia desenfocada de la foto; el resto son capas de CSS.
+ */
+export type FilterOverlay =
+  | 'vignette'
+  | 'lomo'
+  | 'grain'
+  | 'scan'
+  | 'bokeh'
+  | 'tilt'
+  | 'motion'
+  | 'light-leak'
+  | 'haze'
+  | 'halftone'
+  | 'paper'
+  | 'canvas'
+  | 'grunge'
+  | 'streak'
+  // Daños y paso del tiempo (foto antigua, restauración)
+  | 'aged'
+  | 'scratches'
+  | 'stains'
+  | 'tear'
+  | 'date'
+  // Efectos creativos
+  | 'trap'
+  | 'double';
+
+/** Un filtro sobre la foto de muestra: CSS (o `url(#pf-…)`) más una capa opcional. */
+export interface PhotoLook {
+  css: string;
+  overlay?: FilterOverlay;
+}
+
 /** Cómo se muestra el ejemplo visual de una opción. Ver src/components/demos. */
 export type Demo =
   | { kind: 'swatch'; colors: string[] }
   | { kind: 'font'; family: string; weight?: number; sample?: string; upper?: boolean; italic?: boolean }
-  | { kind: 'filter'; css: string; overlay?: 'vignette' | 'grain' | 'duotone' | 'glitch' | 'bokeh' | 'light-leak' | 'matte' }
+  | { kind: 'filter'; css: string; overlay?: FilterOverlay }
+  /** Antes y después sobre la foto de muestra, partida al medio: para arreglos (restaurar, enfocar, ampliar…). */
+  | { kind: 'compare'; before: PhotoLook; after: PhotoLook }
+  /** El filtro elegido en el área (o uno de muestra) a una intensidad: 0 = la foto original, 1 = el filtro entero. */
+  | { kind: 'strength'; value: number }
   | { kind: 'light'; bg: string; sphere: string; glow?: string }
   | { kind: 'texture'; name: string }
   | { kind: 'diagram'; name: string }
@@ -105,6 +144,12 @@ export interface OptionMeta {
   needsSecondImage?: boolean;
   /** Paso de texto libre: el usuario debe escribir qué cambiar o qué agregar. */
   needsTarget?: boolean;
+  /** Ejemplo que se muestra en el paso de texto libre cuando se elige esta opción. */
+  targetHint?: string;
+  /** Términos que esta opción saca de la lista de "evitar" (por ejemplo, un mockup pedido a propósito). */
+  allow?: string[];
+  /** Diseño que se repite sin cortes (Midjourney usa --tile). */
+  tile?: boolean;
 }
 
 export type StepType =
@@ -203,6 +248,10 @@ export interface PromptSpec {
   copy: { role: PromptText; value: string }[];
   purpose?: string;
   needsSecondImage: boolean;
+  /** Patrón continuo: se repite sin cortes. */
+  tile: boolean;
+  /** Lo que alguna opción elegida pide no evitar (meta.allow), también en los negativos fijos de cada IA. */
+  allowed: string[];
 }
 
 export type Lang = 'en' | 'es';

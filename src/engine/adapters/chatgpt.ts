@@ -29,6 +29,15 @@ function list(spec: PromptSpec, role: SegmentRole, lang: Lang) {
   return joinList(roleParts(spec, role, lang), lang);
 }
 
+/**
+ * Valor de una línea etiquetada. Usa la plantilla de cada paso ("made of…", "featuring…") para no perder
+ * qué significa la opción; en edición, estilo y luz ya traen su propia etiqueta ("New style:"), así que van sin plantilla.
+ */
+function labeled(spec: PromptSpec, role: SegmentRole, lang: Lang) {
+  if (spec.mode === 'edit' && (role === 'style' || role === 'lighting')) return list(spec, role, lang);
+  return roleText(spec, role, lang, '; ');
+}
+
 /** ChatGPT (GPT Image 2): segmentos etiquetados, uso declarado y restricciones explícitas. */
 export const chatgpt: ModelAdapter = {
   id: 'chatgpt',
@@ -50,7 +59,7 @@ export const chatgpt: ModelAdapter = {
     }
     for (const role of Object.keys(LABELS) as SegmentRole[]) {
       if (role === 'setting' && spec.mode !== 'edit') continue; // ya está en la primera línea
-      lines.push(line(LABELS[role]!, list(spec, role, lang), lang));
+      lines.push(line(LABELS[role]!, labeled(spec, role, lang), lang));
       if (role === 'lighting') lines.push(line(['Color palette', 'Paleta de color'], colorsWithHex(spec, lang), lang));
     }
     if (spec.copy.length) {

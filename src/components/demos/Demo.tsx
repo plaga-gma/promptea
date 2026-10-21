@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
-import type { Demo as DemoSpec } from '../../engine/types';
+import { useContext, useEffect, useRef, useState } from 'preact/hooks';
+import type { Demo as DemoSpec, FilterOverlay, PhotoLook } from '../../engine/types';
+import { t } from '../../i18n/es';
 import { url } from '../../lib/url';
 import { DIAGRAMS } from './diagrams';
+import { DEFAULT_LOOK, DemoContext, samplePhoto } from './photos';
 
 /** Carga una fuente de Google Fonts solo cuando la tarjeta entra en pantalla, y solo con las letras de la muestra. */
 const loadedFonts = new Set<string>();
@@ -55,6 +57,77 @@ function FontDemo({ demo }: { demo: Extract<DemoSpec, { kind: 'font' }> }) {
   );
 }
 
+/** Capas que son una copia desenfocada de la foto; la máscara de demos.css deja nítida la zona en foco. */
+const PHOTO_OVERLAYS: Partial<Record<FilterOverlay, string>> = {
+  bokeh: 'blur(4px)',
+  tilt: 'blur(3px)',
+  motion: 'url(#pf-motion)',
+};
+
+/** La foto con un filtro y su capa encima. */
+function PhotoLayer({ src, look }: { src: string; look: PhotoLook }) {
+  return (
+    <>
+      <img src={src} alt="" loading="lazy" decoding="async" style={{ filter: look.css }} />
+      {look.overlay &&
+        (PHOTO_OVERLAYS[look.overlay] ? (
+          <img
+            class={`ov ov-${look.overlay}`}
+            src={src}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={{ filter: `${look.css === 'none' ? '' : look.css} ${PHOTO_OVERLAYS[look.overlay]}` }}
+          />
+        ) : (
+          <span class={`ov ov-${look.overlay}`} />
+        ))}
+    </>
+  );
+}
+
+function usePhotoSrc() {
+  const { photo } = useContext(DemoContext);
+  const p = samplePhoto(photo);
+  return [url(`/${p.src}`), `--fx:${p.focus[0]}%;--fy:${p.focus[1]}%`] as const;
+}
+
+/** El filtro aplicado de verdad sobre la foto de muestra elegida (ver photos.ts y FilterDefs.tsx). */
+function FilterDemo({ demo, strength = 1 }: { demo: PhotoLook; strength?: number }) {
+  const [src, focus] = usePhotoSrc();
+  return (
+    <div class="demo demo-filter" style={focus} aria-hidden="true">
+      {strength < 1 && <img src={src} alt="" loading="lazy" decoding="async" />}
+      <div class="fx" style={strength < 1 ? { opacity: strength } : undefined}>
+        <PhotoLayer src={src} look={demo} />
+      </div>
+    </div>
+  );
+}
+
+/** Antes y después: la mitad derecha muestra el resultado. */
+function CompareDemo({ demo }: { demo: Extract<DemoSpec, { kind: 'compare' }> }) {
+  const [src, focus] = usePhotoSrc();
+  return (
+    <div class="demo demo-filter demo-compare" style={focus} aria-hidden="true">
+      <div class="fx">
+        <PhotoLayer src={src} look={demo.before} />
+      </div>
+      <div class="fx after">
+        <PhotoLayer src={src} look={demo.after} />
+      </div>
+      <span class="cmp-tag">{t.builder.before}</span>
+      <span class="cmp-tag cmp-after">{t.builder.after}</span>
+    </div>
+  );
+}
+
+/** El filtro elegido (o uno de muestra) a la intensidad de esta opción. */
+function StrengthDemo({ value }: { value: number }) {
+  const { look } = useContext(DemoContext);
+  return <FilterDemo demo={look ?? DEFAULT_LOOK} strength={value} />;
+}
+
 export function Demo({ demo, label }: { demo?: DemoSpec; label: string }) {
   if (!demo) return <div class="demo demo-none" aria-hidden="true" />;
   switch (demo.kind) {
@@ -69,12 +142,11 @@ export function Demo({ demo, label }: { demo?: DemoSpec; label: string }) {
     case 'font':
       return <FontDemo demo={demo} />;
     case 'filter':
-      return (
-        <div class="demo demo-filter" aria-hidden="true">
-          <img src={url('/demos/muestra.svg')} alt="" loading="lazy" decoding="async" style={{ filter: demo.css }} />
-          {demo.overlay && <span class={`ov ov-${demo.overlay}`} />}
-        </div>
-      );
+      return <FilterDemo demo={demo} />;
+    case 'compare':
+      return <CompareDemo demo={demo} />;
+    case 'strength':
+      return <StrengthDemo value={demo.value} />;
     case 'light':
       return (
         <div class="demo demo-light" style={{ background: demo.bg }} aria-hidden="true">
@@ -106,7 +178,9 @@ export function Demo({ demo, label }: { demo?: DemoSpec; label: string }) {
     }
     case 'gradient':
       return (
-        <div class="demo" style={{ background: `linear-gradient(135deg, ${demo.colors.join(', ')})` }} aria-hidden="true" />
+        <div class="demo demo-gradient" style={{ background: `linear-gradient(135deg, ${demo.colors.join(', ')})` }} aria-hidden="true">
+          {demo.glyph && <span>{demo.glyph}</span>}
+        </div>
       );
     case 'image':
       return demo.src ? (

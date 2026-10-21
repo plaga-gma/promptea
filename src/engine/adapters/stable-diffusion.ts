@@ -39,9 +39,10 @@ export const stableDiffusion: ModelAdapter = {
       ...tags(spec, 'background', lang),
       ...tags(spec, 'preserve', lang),
       lang === 'en' ? 'highly detailed' : 'muy detallado',
-      lang === 'en' ? 'sharp focus' : 'foco nítido',
+      // Si se pidió desenfoque a propósito (bokeh, tilt-shift), no pedir lo contrario.
+      ...(spec.allowed.includes('blurry') ? [] : [lang === 'en' ? 'sharp focus' : 'foco nítido']),
     ];
-    const negative = [...BASE_NEGATIVE, ...spec.avoid];
+    const negative = [...BASE_NEGATIVE.filter((n) => !spec.allowed.includes(n)), ...spec.avoid];
     if (!spec.copy.length) negative.push('text');
     const notes = [
       { es: 'Pegá el prompt en el campo positivo y el negativo en "Negative prompt".' },

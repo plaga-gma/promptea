@@ -8,3 +8,4 @@
 | [04-decisiones.md](04-decisiones.md) | Decisiones de producto y técnicas, y temas pendientes. |
 | [05-arquitectura.md](05-arquitectura.md) | Cómo está organizado el código y cómo sumar opciones, IAs, áreas y secciones. |
 | [06-github.md](06-github.md) | Cómo se publica: Git, GitHub, `publicar.bat` y GitHub Pages. |
+| [07-investigacion-competencia.md](07-investigacion-competencia.md) | Qué tienen 91 páginas parecidas, qué ya diferencia a Promptea y qué opciones y funciones conviene sumar (numeradas para elegir). |

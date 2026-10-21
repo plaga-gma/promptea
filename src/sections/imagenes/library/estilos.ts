@@ -94,13 +94,50 @@ export const ESTILOS: Option[] = [
   S('cottagecore', 'Cottagecore', 'cottagecore aesthetic, cozy rustic countryside, soft natural tones', 'estética cottagecore, campo rústico y acogedor, tonos naturales suaves', 'Vida de campo idealizada, cálida y tranquila.', ['#dda15e', '#606c38']),
   S('y2k', 'Y2K cromado', 'Y2K aesthetic, glossy chrome, holographic iridescent surfaces', 'estética Y2K, cromo brillante, superficies holográficas iridiscentes', 'El futuro según el año 2000: cromo y holográfico.', ['#c0c0c0', '#b5b2ff']),
   S('glitch', 'Glitch', 'digital glitch art, RGB channel shifts, scanlines', 'arte glitch digital, desfase de canales RGB, líneas de escaneo', 'Error digital como estética.', ['#00ff9f', '#ff0055']),
-  S('doble-exposicion', 'Doble exposición', 'double exposure effect, silhouette blended with a landscape', 'efecto de doble exposición, silueta fusionada con un paisaje', 'Dos imágenes fundidas en una silueta.', ['#2b2d42', '#edf2f4']),
+  S('doble-exposicion', 'Doble exposición', 'double exposure effect, silhouette blended with a landscape', 'efecto de doble exposición, silueta fusionada con un paisaje', 'Dos imágenes fundidas en una silueta.', ['#2b2d42', '#edf2f4']),  S('fantasia-epica', 'Fantasía épica', 'epic high fantasy art, majestic landscapes, heroic scale', 'arte de fantasía épica, paisajes majestuosos, escala heroica', 'Castillos, dragones y paisajes enormes.', ['#2a4d69', '#e8c547']),
+  S('retrofuturismo', 'Retrofuturismo', 'retrofuturism, the future as imagined in the 1950s and 60s, chrome and atomic-age shapes', 'retrofuturismo, el futuro tal como se lo imaginaba en los 50 y 60, cromo y formas de la era atómica', 'El futuro visto desde el pasado: cohetes y cromo.', ['#f4a261', '#2a9d8f']),
+  S('postapocaliptico', 'Postapocalíptico', 'post-apocalyptic world, overgrown ruins, desolate atmosphere', 'mundo postapocalíptico, ruinas cubiertas de vegetación, atmósfera desolada', 'Ciudades abandonadas que la naturaleza recupera.', ['#5f5a46', '#b5a36b']),
+  S('terror', 'Terror', 'horror aesthetic, unsettling shadows, eerie and macabre details', 'estética de terror, sombras inquietantes, detalles macabros', 'Miedo y suspenso, como en una película de terror.', ['#0d0d0d', '#6b0f1a']),
+  // Fotografía (más)
+  S('noir-foto', 'Cine negro', 'film noir photography, black and white, hard shadows and venetian blind light', 'fotografía de cine negro, blanco y negro, sombras duras y luz entre persianas', 'Blanco y negro dramático de película policial de los 40.', ['#111111', '#8d8d8d'], { meta: { literal: true } }),
+  S('retrato-estudio', 'Retrato de estudio', 'professional studio portrait photography, seamless backdrop, flattering light', 'retrato fotográfico de estudio profesional, fondo continuo, luz favorecedora', 'Retrato limpio sobre fondo liso.', ['#d8d3cc', '#4a4e69'], { meta: { literal: true } }),
+  S('gastronomica', 'Fotografía gastronómica', 'appetizing food photography, styled plating, shallow depth of field', 'fotografía gastronómica apetitosa, emplatado cuidado, poca profundidad de campo', 'Comida que da ganas de comer.', ['#d62828', '#f4d58d'], { meta: { literal: true } }),
+  S('arquitectura', 'Fotografía de arquitectura', 'architectural photography, straight vertical lines, clean geometry', 'fotografía de arquitectura, líneas verticales rectas, geometría limpia', 'Edificios e interiores con líneas perfectas.', ['#adb5bd', '#343a40'], { meta: { literal: true } }),
+  // Pintura y dibujo (más)
+  S('acrilico', 'Acrílico', 'acrylic painting, vivid colors, visible brushwork', 'pintura acrílica, colores vivos, pinceladas visibles', 'Colores vivos y pinceladas modernas.', ['#ff595e', '#1982c4']),
+  S('lapices-color', 'Lápices de colores', 'colored pencil drawing, hatched strokes, soft paper texture', 'dibujo con lápices de colores, trazos rayados, textura suave de papel', 'Rayado de colores, cálido y escolar.', ['#ffca3a', '#8ac926']),
+  S('boceto', 'Boceto', 'loose sketch, rough expressive pencil lines, unfinished look', 'boceto suelto, líneas de lápiz rápidas y expresivas, aspecto inacabado', 'Trazos rápidos de cuaderno de dibujo.', ['#f8f4e3', '#5c5c5c']),
+  S('sumie', 'Tinta china (sumi-e)', 'sumi-e Japanese ink wash painting, minimal brushstrokes, empty space', 'pintura sumi-e con aguada de tinta japonesa, pinceladas mínimas, espacio vacío', 'Pinceladas de tinta negra con mucho vacío.', ['#f5f1e6', '#2b2b2b']),
+  // Movimientos artísticos
+  S('renacimiento', 'Renacimiento', 'Renaissance painting, balanced classical composition, sfumato, realistic anatomy', 'pintura renacentista, composición clásica equilibrada, sfumato, anatomía realista', 'Pintura clásica de los siglos XV y XVI.', ['#8a6a3b', '#2e4a3f']),
+  S('barroco', 'Barroco', 'Baroque painting, dramatic chiaroscuro, rich dynamic movement', 'pintura barroca, claroscuro dramático, movimiento intenso', 'Drama, luz y sombra del siglo XVII.', ['#2d1b0e', '#c08a3e']),
+  S('impresionismo', 'Impresionismo', 'impressionist painting, visible dabs of color, light and atmosphere', 'pintura impresionista, toques de color visibles, luz y atmósfera', 'Pinceladas sueltas que capturan la luz.', ['#9ec1cf', '#f6d186']),
+  S('expresionismo', 'Expresionismo', 'expressionist painting, distorted forms, intense emotional colors', 'pintura expresionista, formas distorsionadas, colores intensos y emocionales', 'Emoción antes que realismo.', ['#d1495b', '#00798c']),
+  S('cubismo', 'Cubismo', 'cubist painting, fragmented geometric planes, multiple viewpoints', 'pintura cubista, planos geométricos fragmentados, varios puntos de vista', 'Objetos partidos en formas geométricas.', ['#a26769', '#6d2e46']),
+  // Digital y animación (más)
+  S('chibi', 'Chibi / kawaii', 'chibi kawaii style, cute characters with big heads, pastel colors', 'estilo chibi kawaii, personajes tiernos de cabeza grande, colores pastel', 'Personajes tiernos y cabezones.', ['#ffc8dd', '#bde0fe']),
+  S('cel-shading', 'Videojuego (cel shading)', 'stylized video game art, cel shading, bold outlines', 'arte estilizado de videojuego, sombreado cel, contornos marcados', 'Gráficos de videojuego con aspecto de dibujo.', ['#3a86ff', '#ffbe0b']),
+  S('voxel', 'Voxel art', 'voxel art, built from small 3D cubes', 'arte voxel, hecho de pequeños cubos 3D', 'Todo hecho con cubitos, como en los juegos de bloques.', ['#70e000', '#8d6e63']),
+  S('arte-lineal', 'Arte lineal', 'clean line art, single-weight outlines, no shading', 'arte lineal limpio, contornos de grosor parejo, sin sombreado', 'Solo líneas, sin relleno ni sombras.', ['#ffffff', '#222222']),
+  // Técnicas gráficas (más)
+  S('graffiti', 'Graffiti / arte urbano', 'street art graffiti mural, spray paint, bold lettering and drips', 'mural de graffiti y arte urbano, aerosol, letras gruesas y chorreados', 'Aerosol en una pared de la ciudad.', ['#ff006e', '#3a86ff']),
+  S('plano-tecnico', 'Plano técnico', 'technical blueprint drawing, white lines on blue, measurements and annotations', 'plano técnico estilo blueprint, líneas blancas sobre azul, medidas y anotaciones', 'Como un plano de ingeniería.', ['#1d4e89', '#ffffff']),
+  S('tatuaje', 'Tatuaje tradicional', 'traditional tattoo flash art, bold black outlines, limited bright colors', 'diseño de tatuaje tradicional, contornos negros gruesos, pocos colores brillantes', 'Diseño de tatuaje old school.', ['#c1121f', '#1d3557']),
+  S('grabado-antiguo', 'Grabado antiguo', 'vintage engraving illustration, fine cross-hatching, etched lines', 'ilustración en grabado antiguo, sombreado con tramas finas, líneas grabadas', 'Como las ilustraciones de libros del siglo XIX.', ['#efe6d2', '#3b3024']),
+  // Manualidades y materiales
+  S('origami', 'Origami', 'origami paper folding art, crisp folds, paper texture', 'arte en origami de papel plegado, pliegues nítidos, textura de papel', 'Figuras de papel plegado.', ['#f28482', '#84a59d']),
+  S('bordado', 'Bordado', 'embroidery, stitched thread texture on fabric', 'bordado, textura de hilo cosido sobre tela', 'Hilos de colores cosidos sobre tela.', ['#f1dac4', '#a44a3f']),
+  S('tejido', 'Tejido (lana)', 'knitted wool and crochet texture, soft handmade yarn', 'textura de lana tejida y crochet, hilo suave hecho a mano', 'Todo tejido con lana, suave y artesanal.', ['#e5989b', '#b5838d']),
+  S('mosaico', 'Mosaico', 'mosaic made of small ceramic tiles, visible grout lines', 'mosaico de pequeñas piezas de cerámica, juntas visibles', 'Imagen hecha con pedacitos de cerámica.', ['#0081a7', '#f07167']),
+  S('diorama', 'Diorama en miniatura', 'handmade miniature diorama, tiny detailed scale model, tilt-shift look', 'diorama en miniatura hecho a mano, maqueta diminuta y detallada, look tilt-shift', 'Una maqueta pequeña y detallada.', ['#90be6d', '#f9c74f']),
 ];
 
 export const ESTILOS_GROUPS: Step['groups'] = [
-  { id: 'foto', label: { es: 'Fotografía' }, optionIds: ['cinematografico', 'editorial', 'documental', 'producto', 'analogica', 'polaroid', 'fotorrealista'] },
-  { id: 'pintura', label: { es: 'Pintura y dibujo' }, optionIds: ['acuarela', 'oleo', 'gouache', 'tinta', 'lapiz', 'carbonilla', 'pastel'] },
-  { id: 'digital', label: { es: 'Digital y animación' }, optionIds: ['anime', 'manga', 'comic', 'caricatura', 'animacion3d', 'pixel', 'lowpoly', 'isometrico', 'clay', 'flat'] },
-  { id: 'grafica', label: { es: 'Técnicas gráficas' }, optionIds: ['risografia', 'linograbado', 'serigrafia', 'popart', 'papel', 'vitral', 'ukiyoe', 'collage-estilo'] },
-  { id: 'esteticas', label: { es: 'Estéticas y movimientos' }, optionIds: ['minimalista', 'maximalista', 'surrealista', 'artnouveau', 'artdeco', 'cyberpunk', 'steampunk', 'solarpunk', 'vaporwave', 'synthwave', 'fantasia-oscura', 'cottagecore', 'y2k', 'glitch', 'doble-exposicion'] },
+  { id: 'foto', label: { es: 'Fotografía' }, optionIds: ['cinematografico', 'editorial', 'documental', 'producto', 'analogica', 'polaroid', 'fotorrealista', 'noir-foto', 'retrato-estudio', 'gastronomica', 'arquitectura'] },
+  { id: 'pintura', label: { es: 'Pintura y dibujo' }, optionIds: ['acuarela', 'oleo', 'acrilico', 'gouache', 'tinta', 'sumie', 'lapiz', 'lapices-color', 'boceto', 'carbonilla', 'pastel'] },
+  { id: 'movimientos', label: { es: 'Movimientos artísticos' }, optionIds: ['renacimiento', 'barroco', 'impresionismo', 'expresionismo', 'cubismo', 'surrealista', 'artnouveau', 'artdeco', 'popart'] },
+  { id: 'digital', label: { es: 'Digital y animación' }, optionIds: ['anime', 'manga', 'chibi', 'comic', 'caricatura', 'animacion3d', 'cel-shading', 'pixel', 'voxel', 'lowpoly', 'isometrico', 'flat', 'arte-lineal'] },
+  { id: 'grafica', label: { es: 'Técnicas gráficas' }, optionIds: ['risografia', 'linograbado', 'serigrafia', 'grabado-antiguo', 'ukiyoe', 'collage-estilo', 'graffiti', 'tatuaje', 'plano-tecnico'] },
+  { id: 'manual', label: { es: 'Manualidades y materiales' }, optionIds: ['papel', 'origami', 'clay', 'bordado', 'tejido', 'mosaico', 'vitral', 'diorama'] },
+  { id: 'esteticas', label: { es: 'Estéticas' }, optionIds: ['minimalista', 'maximalista', 'cyberpunk', 'steampunk', 'solarpunk', 'retrofuturismo', 'vaporwave', 'synthwave', 'fantasia-epica', 'fantasia-oscura', 'postapocaliptico', 'terror', 'cottagecore', 'y2k', 'glitch', 'doble-exposicion'] },
 ];

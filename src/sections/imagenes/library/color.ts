@@ -1,4 +1,4 @@
-import type { Option } from '../../../engine/types';
+import type { Demo, Option } from '../../../engine/types';
 import { o } from './_helpers';
 
 const sw = (...colors: string[]) => ({ kind: 'swatch' as const, colors });
@@ -21,6 +21,14 @@ export const PALETAS: Option[] = [
   o('atardecer', 'Atardecer', 'sunset gradient palette of coral, magenta and violet', 'paleta degradada de atardecer: coral, magenta y violeta', { hint: 'Cálida y emotiva.', demo: sw('#ff9e64', '#ff5d8f', '#b5179e', '#3a0ca3') }),
   o('vibrante', 'Primarios vibrantes', 'bold primary palette of red, yellow and blue', 'paleta de primarios intensos: rojo, amarillo y azul', { hint: 'Lúdica, enérgica, estilo Bauhaus o infantil.', demo: sw('#e63946', '#ffd60a', '#1d4ed8', '#ffffff') }),
   o('corporativo', 'Corporativo', 'clean corporate palette of navy blue, light gray and white', 'paleta corporativa limpia: azul marino, gris claro y blanco', { hint: 'Confianza y profesionalismo.', demo: sw('#0a2342', '#2c6e9b', '#e5e7eb', '#ffffff') }),
+  o('joya', 'Tonos joya', 'rich jewel tone palette of emerald, sapphire, ruby and amethyst', 'paleta de tonos joya: esmeralda, zafiro, rubí y amatista', { hint: 'Colores profundos y elegantes.', demo: sw('#0b6e4f', '#1d3a8a', '#9b1d42', '#5b2a86') }),
+  o('mediterraneo', 'Mediterráneo', 'Mediterranean palette of whitewash, cobalt blue and terracotta', 'paleta mediterránea: blanco cal, azul cobalto y terracota', { hint: 'Grecia, sol y mar.', demo: sw('#f8f4ec', '#1f4e9c', '#d9734e', '#e9c46a') }),
+  o('tropical', 'Tropical', 'vibrant tropical palette of lime, turquoise, mango and flamingo pink', 'paleta tropical vibrante: lima, turquesa, mango y rosa flamenco', { hint: 'Verano, frutas y playa.', demo: sw('#9bd13d', '#1cc6c0', '#ffb703', '#ff5d8f') }),
+  o('nordico', 'Nórdica', 'calm Nordic palette of warm white, light oak, sage and charcoal', 'paleta nórdica calma: blanco cálido, roble claro, verde salvia y carbón', { hint: 'Escandinavo: claro, natural y sereno.', demo: sw('#f5f1ea', '#d8c3a5', '#9caf88', '#3d3d3d') }),
+  o('otono-paleta', 'Otoño', 'autumn palette of rust, burnt orange, mustard and deep brown', 'paleta otoñal: óxido, naranja quemado, mostaza y marrón profundo', { hint: 'Cálida y acogedora.', demo: sw('#9c3d1a', '#d9772b', '#d4a017', '#4a2c1d') }),
+  o('caramelo', 'Caramelo', 'playful candy palette of bubblegum pink, lemon, mint and sky blue', 'paleta caramelo divertida: rosa chicle, limón, menta y celeste', { hint: 'Dulce, divertida e infantil.', demo: sw('#ff8fab', '#fff275', '#9ef0c6', '#7cc6fe') }),
+  o('cyberpunk-paleta', 'Cyberpunk', 'cyberpunk palette of hot magenta, acid yellow and electric teal on black', 'paleta cyberpunk: magenta intenso, amarillo ácido y turquesa eléctrico sobre negro', { hint: 'Futuro nocturno y tecnológico.', demo: sw('#ff006e', '#f5f500', '#00e5d4', '#0a0a12') }),
+  o('cafe', 'Café y crema', 'cozy coffee palette of espresso, caramel, latte and cream', 'paleta café acogedora: espresso, caramelo, latte y crema', { hint: 'Cálida, ideal para cafeterías y panaderías.', demo: sw('#3b2418', '#a8642a', '#d2b48c', '#f5ebdd') }),
   o('gotico', 'Oscura', 'dark moody palette of charcoal, burgundy and deep plum', 'paleta oscura y sombría: carbón, bordó y ciruela', { hint: 'Misteriosa y dramática.', demo: sw('#1c1c1c', '#5e1914', '#3d1e3f', '#8c8c8c') }),
 ];
 
@@ -39,21 +47,29 @@ export const ATMOSFERAS: Option[] = [
   o('melancolica', 'Melancólica', 'a melancholic, quiet atmosphere', 'una atmósfera melancólica y silenciosa', { hint: 'Tristeza suave y reflexiva.', demo: g('#5c677d', '#b8c0cc') }),
   o('energica', 'Enérgica', 'an energetic, dynamic atmosphere', 'una atmósfera enérgica y dinámica', { hint: 'Movimiento y adrenalina.', demo: g('#ff006e', '#fb5607') }),
   o('lujosa', 'Lujosa', 'a luxurious, sophisticated atmosphere', 'una atmósfera lujosa y sofisticada', { hint: 'Elegancia y exclusividad.', demo: g('#111111', '#c9a227') }),
+  o('romantica', 'Romántica', 'a romantic, tender atmosphere', 'una atmósfera romántica y tierna', { hint: 'Amor y ternura.', demo: g('#ffafcc', '#c9184a') }),
+  o('futurista', 'Futurista', 'a sleek, futuristic atmosphere', 'una atmósfera futurista y sofisticada', { hint: 'Tecnología y vanguardia.', demo: g('#00f0ff', '#2d00f7') }),
+  o('festiva', 'Festiva', 'a festive, celebratory atmosphere', 'una atmósfera festiva y de celebración', { hint: 'Fiesta, brindis y confeti.', demo: g('#ffbe0b', '#8338ec') }),
+  o('intima', 'Íntima', 'an intimate, quiet and personal atmosphere', 'una atmósfera íntima, silenciosa y personal', { hint: 'Cercana y en voz baja.', demo: g('#6d597a', '#e56b6f') }),
+  o('solitaria', 'Solitaria', 'a lonely, solitary atmosphere', 'una atmósfera de soledad', { hint: 'Una figura sola en un gran espacio.', demo: g('#415a77', '#0d1b2a') }),
+  o('caotica', 'Caótica', 'a chaotic, frenetic atmosphere', 'una atmósfera caótica y frenética', { hint: 'Mucho pasando a la vez.', demo: g('#f72585', '#4cc9f0') }),
 ];
 
 /** Texturas y acabado. */
 const tx = (name: string) => ({ kind: 'texture' as const, name });
+/** Las texturas que se pueden ver sobre una foto usan la misma demo que los filtros. */
+const onPhoto = (css: string, overlay: Extract<Demo, { kind: 'filter' }>['overlay']): Demo => ({ kind: 'filter', css, overlay });
 export const TEXTURAS: Option[] = [
-  o('grano', 'Grano de película', 'subtle film grain', 'grano de película sutil', { hint: 'Aspecto analógico y orgánico.', demo: tx('grain') }),
-  o('papel', 'Textura de papel', 'visible paper texture', 'textura de papel visible', { hint: 'Como impreso o dibujado sobre papel.', demo: tx('paper') }),
-  o('trama', 'Trama de puntos', 'halftone dot texture', 'textura de trama de puntos (halftone)', { hint: 'Puntos de impresión, estilo cómic o retro.', demo: tx('halftone') }),
-  o('lienzo', 'Lienzo', 'canvas texture', 'textura de lienzo', { hint: 'La trama de la tela de un cuadro.', demo: tx('canvas') }),
-  o('grunge', 'Grunge', 'distressed grunge texture, scratches and wear', 'textura grunge desgastada, rayones y uso', { hint: 'Gastado, sucio y con carácter.', demo: tx('grunge') }),
+  o('grano', 'Grano de película', 'subtle film grain', 'grano de película sutil', { hint: 'Aspecto analógico y orgánico.', demo: onPhoto('contrast(1.05)', 'grain') }),
+  o('papel', 'Textura de papel', 'visible paper texture', 'textura de papel visible', { hint: 'Como impreso o dibujado sobre papel.', demo: onPhoto('sepia(.2) contrast(.92)', 'paper') }),
+  o('trama', 'Trama de puntos', 'halftone dot texture', 'textura de trama de puntos (halftone)', { hint: 'Puntos de impresión, estilo cómic o retro.', demo: onPhoto('url(#pf-halftone)', 'halftone') }),
+  o('lienzo', 'Lienzo', 'canvas texture', 'textura de lienzo', { hint: 'La trama de la tela de un cuadro.', demo: onPhoto('saturate(1.1) contrast(.95)', 'canvas') }),
+  o('grunge', 'Grunge', 'distressed grunge texture, scratches and wear', 'textura grunge desgastada, rayones y uso', { hint: 'Gastado, sucio y con carácter.', demo: onPhoto('contrast(1.15) saturate(.7)', 'grunge') }),
   o('brillante', 'Brillante', 'glossy reflective finish', 'acabado brillante y reflectante', { hint: 'Superficies que reflejan la luz.', demo: tx('glossy') }),
   o('mate', 'Mate', 'soft matte finish', 'acabado mate suave', { hint: 'Sin brillos: suave y moderno.', demo: tx('matte') }),
   o('metalico', 'Metálico', 'brushed metallic texture', 'textura metálica cepillada', { hint: 'Acero, cromo o aluminio.', demo: tx('metal') }),
   o('holografico', 'Holográfico', 'iridescent holographic sheen', 'brillo holográfico iridiscente', { hint: 'Reflejos tornasolados, como un holograma.', demo: tx('holo') }),
-  o('vhs', 'VHS', 'VHS tape artifacts, scanlines and color bleed', 'artefactos de cinta VHS, líneas de escaneo y color corrido', { hint: 'Video casero de los 80 y 90.', demo: tx('vhs') }),
+  o('vhs', 'VHS', 'VHS tape artifacts, scanlines and color bleed', 'artefactos de cinta VHS, líneas de escaneo y color corrido', { hint: 'Video casero de los 80 y 90.', demo: onPhoto('url(#pf-vhs)', 'scan') }),
 ];
 
 /** Formato (relación de aspecto). */
@@ -64,6 +80,7 @@ export const FORMATOS: Option[] = [
   o('2-3', 'Vertical 2:3', 'vertical 2:3 format', 'formato vertical 2:3', { hint: 'Pósters, portadas de libro, Pinterest.', demo: r(2, 3), meta: { ratio: [2, 3] } }),
   o('3-4', 'Vertical 3:4', 'vertical 3:4 format', 'formato vertical 3:4', { hint: 'Retratos y fotos verticales clásicas.', demo: r(3, 4), meta: { ratio: [3, 4] } }),
   o('9-16', 'Historia 9:16', 'vertical 9:16 format', 'formato vertical 9:16', { hint: 'Historias, Reels, TikTok y fondos de celular.', demo: r(9, 16), meta: { ratio: [9, 16] } }),
+  o('4-3', 'Horizontal 4:3', 'horizontal 4:3 format', 'formato horizontal 4:3', { hint: 'Presentaciones y fotos de celular apaisadas.', demo: r(4, 3), meta: { ratio: [4, 3] } }),
   o('3-2', 'Horizontal 3:2', 'horizontal 3:2 format', 'formato horizontal 3:2', { hint: 'La foto clásica de cámara.', demo: r(3, 2), meta: { ratio: [3, 2] } }),
   o('16-9', 'Panorámico 16:9', 'widescreen 16:9 format', 'formato panorámico 16:9', { hint: 'Miniaturas de YouTube, banners y fondos de pantalla.', demo: r(16, 9), meta: { ratio: [16, 9] } }),
   o('21-9', 'Cine 21:9', 'ultra-wide cinematic 21:9 format', 'formato cinematográfico ultra ancho 21:9', { hint: 'Look de película en pantalla ancha.', demo: r(21, 9), meta: { ratio: [21, 9] } }),
