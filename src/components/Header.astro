@@ -1,0 +1,106 @@
+---
+import { SITE } from '../config/site';
+import { url } from '../lib/url';
+import { SECTIONS } from '../sections';
+import Logo from './Logo.astro';
+
+const path = Astro.url.pathname;
+const links = [
+  ...SECTIONS.flatMap((s) => s.areas.map((a) => ({ href: url(`/${s.id}/${a.id}/`), label: a.title.es }))),
+  { href: url('/mis-prompts/'), label: 'Mis prompts' },
+];
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href={url('/')} aria-label={`${SITE.name}, inicio`}>
+      <Logo size={30} />
+      <span>{SITE.name}</span>
+    </a>
+    <nav aria-label="Principal">
+      <ul>
+        {
+          links.map((l) => (
+            <li>
+              <a href={l.href} aria-current={path === l.href ? 'page' : undefined}>
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: saturate(1.6) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 60px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  nav {
+    margin-left: auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  ul {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a {
+    display: block;
+    padding: 0.45em 0.8em;
+    border-radius: 999px;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.925rem;
+    white-space: nowrap;
+  }
+  nav a:hover {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+  nav a[aria-current='page'] {
+    color: var(--primary-strong);
+    background: var(--primary-soft);
+  }
+  @media (max-width: 640px) {
+    .bar {
+      flex-wrap: wrap;
+      gap: 0;
+      padding-block: 0.4rem;
+    }
+    nav {
+      margin-left: 0;
+      width: 100%;
+    }
+    nav a {
+      padding-inline: 0.65em;
+    }
+  }
+</style>

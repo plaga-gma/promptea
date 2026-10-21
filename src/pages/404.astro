@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/url';
+---
+
+<Base title="Página no encontrada" description="Esta página no existe." noindex>
+  <section class="container" style="padding-top:4rem;text-align:center">
+    <h1>Esta página no existe</h1>
+    <p class="muted">Puede que el enlace esté roto o que la página se haya movido.</p>
+    <a class="btn btn-primary" href={url('/')}>Volver al inicio</a>
+  </section>
+</Base>

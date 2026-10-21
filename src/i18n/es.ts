@@ -1,0 +1,55 @@
+/**
+ * Textos de la interfaz en español. Para traducir la web, crear en.ts con las mismas claves
+ * y elegir el diccionario según el idioma de la página (ver docs/05-arquitectura.md).
+ */
+export const es = {
+  builder: {
+    simple: 'Simple',
+    advanced: 'Avanzado',
+    modeLabel: 'Nivel de detalle',
+    modeHint: 'El modo avanzado suma cámara, lentes, texturas y qué evitar.',
+    required: 'Obligatorio',
+    optional: 'Opcional',
+    upTo: (n: number) => `Elegí hasta ${n}`,
+    clear: 'Limpiar',
+    showAll: (n: number) => `Ver todas (${n})`,
+    showLess: 'Ver menos',
+    all: 'Todos',
+    freeTextTip: 'Podés escribir en español. Si sabés inglés, escribilo en inglés: el resultado suele ser más preciso.',
+    copyTooLong: 'Textos cortos salen mejor: probá con 2 a 4 palabras.',
+    reset: 'Empezar de nuevo',
+  },
+  panel: {
+    title: 'Tu prompt',
+    model: 'IA de destino',
+    empty: 'Elegí opciones a la izquierda y tu prompt aparece acá.',
+    missing: 'Te falta completar:',
+    conflict: (a: string, b: string) => `"${a}" y "${b}" se contradicen: la IA puede mezclarlos mal.`,
+    copy: 'Copiar prompt',
+    copied: '¡Copiado!',
+    copyNegative: 'Copiar negativo',
+    negative: 'Prompt negativo',
+    open: (name: string) => `Copiar y abrir ${name}`,
+    favorite: 'Guardar en favoritos',
+    unfavorite: 'Quitar de favoritos',
+    spanish: 'Ver el prompt en español',
+    spanishWarn: 'No recomendado: las IAs de imagen entienden mejor el inglés.',
+    creativity: 'Libertad creativa',
+    creativityLevels: ['Literal', 'Equilibrada', 'Libre'],
+    tips: 'Cómo usarlo',
+    words: (n: number) => `${n} palabras`,
+    show: 'Ver prompt',
+    hide: 'Ocultar',
+  },
+  saved: {
+    history: 'Historial',
+    favorites: 'Favoritos',
+    emptyHistory: 'Todavía no copiaste ningún prompt. Cada prompt que copies queda guardado acá, solo en este navegador.',
+    emptyFavorites: 'Marcá un prompt con la estrella para guardarlo acá.',
+    load: 'Abrir en el constructor',
+    remove: 'Borrar',
+    clearHistory: 'Borrar historial',
+  },
+} as const;
+
+export const t = es;

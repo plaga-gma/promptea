@@ -1,0 +1,176 @@
+---
+import AreaCard from '../components/AreaCard.astro';
+import { SITE } from '../config/site';
+import { ADAPTERS } from '../engine/adapters';
+import Base from '../layouts/Base.astro';
+import { SECTIONS } from '../sections';
+
+const faqs = [
+  {
+    q: '¿Qué es un prompt?',
+    a: 'Es el texto con el que le pedís algo a una inteligencia artificial. En imágenes, un buen prompt describe el tipo de imagen, el sujeto, el estilo, la luz, los colores y el formato. Cuanto más preciso, más se parece el resultado a lo que imaginaste.',
+  },
+  {
+    q: '¿Promptea genera las imágenes?',
+    a: 'No. Promptea arma el prompt; vos lo pegás en la IA que uses (ChatGPT, Gemini, Meta AI en WhatsApp, Midjourney y otras). Así podés usar la que más te guste o la que ya tenés.',
+  },
+  {
+    q: '¿Necesito saber de diseño?',
+    a: 'No. Cada opción tiene un ejemplo visual y una explicación corta. Elegís viendo, y Promptea traduce tus elecciones al vocabulario que usan los diseñadores y fotógrafos.',
+  },
+  {
+    q: '¿Por qué el prompt sale en inglés?',
+    a: 'Porque la mayoría de las IAs de imagen fueron entrenadas sobre todo en inglés y lo siguen con más precisión. Si querés, podés verlo en español.',
+  },
+  {
+    q: '¿Se guardan mis prompts?',
+    a: 'Solo en tu navegador. No hay cuentas ni servidores: tu historial y tus favoritos quedan en tu dispositivo.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: SITE.name,
+    applicationCategory: 'DesignApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'es',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description: SITE.description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+
+<Base title={SITE.name} description={SITE.description} jsonLd={jsonLd}>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Generador de prompts para imágenes con IA</p>
+      <h1>Pedile a la IA <span class="grad">exactamente</span> lo que imaginás</h1>
+      <p class="lead">
+        No es lo mismo pedir "un flyer lindo" que "un flyer minimalista con tipografía condensada, paleta tierra y mucho espacio en blanco".
+        Promptea te da ese vocabulario: elegís viendo ejemplos y te devuelve un prompt de experto.
+      </p>
+    </div>
+  </section>
+
+  {
+    SECTIONS.map((section) => (
+      <section class="container block" aria-labelledby={`s-${section.id}`}>
+        <h2 id={`s-${section.id}`}>{section.title.es}</h2>
+        <p class="muted">{section.description.es}</p>
+        <div class="areas">
+          {section.areas.map((area) => (
+            <AreaCard sectionId={section.id} area={area} />
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="container block" aria-labelledby="como">
+    <h2 id="como">Cómo funciona</h2>
+    <ol class="how">
+      <li class="card">
+        <strong>1. Elegí viendo</strong>
+        <span class="muted">Estilos, luces, tipografías, paletas y filtros con ejemplos visuales. Cada opción te explica para qué sirve.</span>
+      </li>
+      <li class="card">
+        <strong>2. Elegí tu IA</strong>
+        <span class="muted">Promptea escribe el prompt con las reglas de cada una: {ADAPTERS.map((a) => a.name).join(', ')}.</span>
+      </li>
+      <li class="card">
+        <strong>3. Copiá y pegá</strong>
+        <span class="muted">Pegalo en tu IA. Tu historial y tus favoritos quedan guardados en tu navegador.</span>
+      </li>
+    </ol>
+  </section>
+
+  <section class="container block" aria-labelledby="faq">
+    <h2 id="faq">Preguntas frecuentes</h2>
+    <div class="faq">
+      {
+        faqs.map((f) => (
+          <details class="card">
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: clamp(2.5rem, 7vw, 5rem) 0 1.5rem;
+    background: radial-gradient(60% 80% at 15% 0%, var(--primary-soft), transparent 70%),
+      radial-gradient(50% 70% at 100% 10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%);
+  }
+  .eyebrow {
+    color: var(--primary-strong);
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.6rem;
+  }
+  .hero h1 {
+    max-width: 16ch;
+  }
+  .grad {
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lead {
+    max-width: 62ch;
+    font-size: 1.12rem;
+    color: var(--muted);
+  }
+  .block {
+    margin-top: 2.5rem;
+  }
+  .areas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .how {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .how li {
+    display: grid;
+    gap: 0.4rem;
+    padding: 1.2rem;
+    box-shadow: none;
+  }
+  .faq {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  .faq details {
+    padding: 0.9rem 1.1rem;
+    box-shadow: none;
+  }
+  .faq summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .faq p {
+    margin: 0.6rem 0 0;
+    color: var(--muted);
+  }
+</style>

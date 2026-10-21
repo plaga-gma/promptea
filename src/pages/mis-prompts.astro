@@ -1,0 +1,61 @@
+---
+import SavedList from '../components/SavedList';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Mis prompts" description="Tu historial y tus prompts favoritos de Promptea, guardados solo en tu navegador." noindex>
+  <section class="container head">
+    <h1>Mis prompts</h1>
+    <p class="muted">Se guardan solo en este navegador. Si borrás los datos del navegador o usás otro dispositivo, no van a aparecer.</p>
+    <SavedList client:load />
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding-top: 2.5rem;
+  }
+  :global(.saved-list) {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+  :global(.saved-list ul) {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+  :global(.saved) {
+    padding: 1rem 1.1rem;
+    box-shadow: none;
+    display: grid;
+    gap: 0.5rem;
+  }
+  :global(.saved h3) {
+    margin: 0;
+  }
+  :global(.saved pre) {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    background: var(--surface-2);
+    padding: 0.7rem;
+    border-radius: var(--radius-sm);
+    max-height: 9.5em;
+    overflow: auto;
+  }
+  :global(.saved .row),
+  :global(.saved-list .groups) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  :global(.small) {
+    font-size: 0.85rem;
+  }
+</style>

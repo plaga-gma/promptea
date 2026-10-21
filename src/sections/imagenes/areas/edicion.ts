@@ -1,0 +1,122 @@
+import type { Area } from '../../../engine/types';
+import { EVITAR, FORMATOS } from '../library/color';
+import { FILTROS, INTENSIDADES, OPERACIONES, PRESERVAR } from '../library/edicion';
+import { ESTILOS } from '../library/estilos';
+import { ILUMINACION } from '../library/foto';
+
+export const edicion: Area = {
+  id: 'edicion',
+  mode: 'edit',
+  title: { es: 'Edición' },
+  tagline: { es: 'Retocá y transformá imágenes que ya tenés' },
+  description: {
+    es: 'Elegí qué querés hacer con tu imagen y qué tiene que quedar igual. Después pegá el prompt junto con tu foto en la IA que uses.',
+  },
+  seo: {
+    title: 'Generador de prompts para editar fotos con IA',
+    description:
+      'Prompts para quitar fondos, borrar objetos, aplicar filtros, restaurar y retocar fotos con ChatGPT, Gemini, Meta AI y FLUX. Elegí el efecto viendo ejemplos.',
+  },
+  steps: [
+    {
+      id: 'operacion',
+      title: { es: '¿Qué querés hacer?' },
+      why: { es: 'Las IAs editan mejor cuando la instrucción empieza con un verbo claro: quitar, cambiar, agregar.' },
+      role: 'operation',
+      type: 'single',
+      required: true,
+      options: OPERACIONES,
+    },
+    {
+      id: 'target',
+      title: { es: '¿Qué cosa, exactamente?' },
+      why: { es: 'Ubicalo con precisión: "el cartel rojo de la izquierda" funciona mejor que "el cartel".' },
+      role: 'operation',
+      type: 'text',
+      required: true,
+      placeholder: { es: 'Ej.: la persona de remera azul que está al fondo' },
+      showIfMeta: 'needsTarget',
+    },
+    {
+      id: 'nuevo-estilo',
+      title: { es: 'Nuevo estilo' },
+      why: { es: 'El estilo al que querés llevar tu imagen.' },
+      role: 'style',
+      type: 'single',
+      required: true,
+      options: ESTILOS,
+      showIf: { step: 'operacion', in: ['estilo'] },
+      template: { en: 'New style: {value}', es: 'Nuevo estilo: {value}' },
+    },
+    {
+      id: 'filtro',
+      title: { es: 'Filtro' },
+      why: { es: 'Mirá el efecto aplicado sobre la imagen de muestra.' },
+      role: 'style',
+      type: 'single',
+      required: true,
+      options: FILTROS,
+      showIf: { step: 'operacion', in: ['filtro'] },
+      template: { en: 'Look: {value}', es: 'Look: {value}' },
+    },
+    {
+      id: 'nueva-luz',
+      title: { es: 'Nueva iluminación' },
+      why: { es: 'La luz nueva tiene que ser coherente con la escena.' },
+      role: 'lighting',
+      type: 'single',
+      required: true,
+      options: ILUMINACION,
+      showIf: { step: 'operacion', in: ['reiluminar'] },
+      template: { en: 'New lighting: {value}', es: 'Nueva iluminación: {value}' },
+    },
+    {
+      id: 'textos',
+      title: { es: 'Texto' },
+      why: { es: 'Textos cortos y entre comillas: así la IA los escribe tal cual.' },
+      role: 'text',
+      type: 'copy',
+      showIf: { step: 'operacion', in: ['texto'] },
+      fields: [
+        { id: 'texto', label: { es: 'Texto' }, placeholder: { es: 'Ej.: ABIERTO' }, role: { en: 'the new text', es: 'el texto nuevo' } },
+      ],
+    },
+    {
+      id: 'formato',
+      title: { es: 'Nuevo formato' },
+      why: { es: 'La proporción final de la imagen expandida.' },
+      role: 'format',
+      type: 'single',
+      options: FORMATOS,
+      showIf: { step: 'operacion', in: ['expandir'] },
+      template: { en: 'Target format: {value}', es: 'Formato final: {value}' },
+    },
+    {
+      id: 'preservar',
+      title: { es: '¿Qué tiene que quedar igual?' },
+      why: { es: 'Es la clave de una buena edición: si no lo decís, la IA puede cambiar caras, colores o el encuadre.' },
+      role: 'preserve',
+      type: 'multi',
+      options: PRESERVAR,
+      template: { en: 'Keep {value} exactly as in the original', es: 'Mantené {value} exactamente como en el original' },
+    },
+    {
+      id: 'intensidad',
+      title: { es: 'Intensidad' },
+      why: { es: 'Menos es más: los retoques sutiles se ven profesionales.' },
+      role: 'intensity',
+      type: 'single',
+      options: INTENSIDADES,
+    },
+    {
+      id: 'evitar',
+      title: { es: 'Qué evitar' },
+      why: { es: 'Problemas típicos de las ediciones con IA.' },
+      role: 'avoid',
+      type: 'multi',
+      max: 4,
+      level: 'advanced',
+      options: EVITAR.filter((o) => ['sin-deformaciones', 'sin-borroso', 'sin-saturar', 'sin-marca-agua'].includes(o.id)),
+    },
+  ],
+};

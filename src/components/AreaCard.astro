@@ -1,0 +1,66 @@
+---
+import type { Area } from '../engine/types';
+import { url } from '../lib/url';
+
+interface Props {
+  sectionId: string;
+  area: Area;
+}
+const { sectionId, area } = Astro.props;
+const icons: Record<string, string> = {
+  generacion: '<path d="M8 36l10-14 8 9 6-6 10 11z" fill="currentColor"/><circle cx="34" cy="14" r="5" fill="currentColor"/>',
+  edicion: '<path d="M10 34l18-18 6 6-18 18H10z" fill="currentColor"/><path d="M31 13l4-4 6 6-4 4z" fill="currentColor"/>',
+  diseno: '<circle cx="16" cy="16" r="8" fill="currentColor"/><rect x="26" y="8" width="14" height="14" rx="2" fill="currentColor"/><path d="M8 40l9-14 9 14z" fill="currentColor"/><rect x="28" y="28" width="12" height="12" rx="6" fill="currentColor" opacity=".6"/>',
+};
+---
+
+<a class="area-card card" href={url(`/${sectionId}/${area.id}/`)}>
+  <span class={`icon icon-${area.id}`}>
+    <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true" set:html={icons[area.id] ?? icons.generacion} />
+  </span>
+  <h3>{area.title.es}</h3>
+  <p class="muted">{area.tagline.es}</p>
+  <span class="go">Empezar →</span>
+</a>
+
+<style>
+  .area-card {
+    display: grid;
+    gap: 0.4rem;
+    padding: 1.4rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .area-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+  }
+  .area-card h3 {
+    font-size: 1.3rem;
+    margin: 0.4rem 0 0;
+  }
+  .area-card p {
+    margin: 0;
+  }
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+  }
+  .icon-edicion {
+    background: linear-gradient(135deg, #1fa6a0, var(--primary));
+  }
+  .icon-diseno {
+    background: linear-gradient(135deg, var(--accent), #ffb347);
+  }
+  .go {
+    margin-top: 0.4rem;
+    color: var(--primary-strong);
+    font-weight: 700;
+  }
+</style>

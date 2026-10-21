@@ -1,0 +1,57 @@
+---
+import Builder from '../../components/builder/Builder';
+import Base from '../../layouts/Base.astro';
+import { url } from '../../lib/url';
+import { SECTIONS } from '../../sections';
+
+export function getStaticPaths() {
+  return SECTIONS.flatMap((section) =>
+    section.areas.map((area) => ({ params: { section: section.id, area: area.id }, props: { section, area } })),
+  );
+}
+
+const { section, area } = Astro.props;
+const breadcrumbs = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: new URL(url('/'), Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: section.title.es, item: new URL(url(`/${section.id}/`), Astro.site).href },
+    { '@type': 'ListItem', position: 3, name: area.title.es, item: new URL(url(`/${section.id}/${area.id}/`), Astro.site).href },
+  ],
+};
+---
+
+<Base title={area.seo.title} description={area.seo.description} jsonLd={[breadcrumbs]}>
+  <div class="container">
+    <nav class="crumbs small muted" aria-label="Ubicación">
+      <a href={url('/')}>Inicio</a> / <a href={url(`/${section.id}/`)}>{section.title.es}</a> / <span>{area.title.es}</span>
+    </nav>
+    <header class="head">
+      <h1>{area.title.es}</h1>
+      <p class="muted">{area.description.es}</p>
+    </header>
+    <Builder client:load sectionId={section.id} area={area} />
+  </div>
+</Base>
+
+<style>
+  .crumbs {
+    padding-top: 1.2rem;
+    font-size: 0.85rem;
+  }
+  .crumbs a {
+    color: inherit;
+  }
+  .head {
+    margin: 0.6rem 0 1.4rem;
+  }
+  .head h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    margin-bottom: 0.3rem;
+  }
+  .head p {
+    max-width: 70ch;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+import { SITE } from '../config/site';
+import { url } from '../lib/url';
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <p>
+      <strong>{SITE.name}</strong>: un puente entre lo que imaginás y lo que la IA entiende. Proyecto de código abierto.
+    </p>
+    <p class="muted small">
+      Promptea no genera imágenes ni guarda nada en servidores: tus prompts, historial y favoritos quedan solo en tu navegador.
+    </p>
+    <p class="small links">
+      <a href={url('/mis-prompts/')}>Mis prompts</a>
+      {SITE.repoUrl && <a href={SITE.repoUrl}>Código en GitHub</a>}
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 4rem;
+    border-top: 1px solid var(--border);
+    padding-block: 2rem 2.5rem;
+    background: var(--surface);
+  }
+  .small {
+    font-size: 0.875rem;
+  }
+  .links {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+  }
+</style>
