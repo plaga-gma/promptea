@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { getAdapter } from '../../engine/adapters';
-import { buildSpec, findConflicts, hasValue, isStepVisible, missingSteps, pruneDetails, selectedOptions, targetFilled } from '../../engine/build';
+import { buildSpec, findConflicts, hasValue, isStepVisible, missingSteps, missingTargets, pruneDetails, selectedOptions } from '../../engine/build';
 import type { Area, LocalizedText, SelectionValue, Selections } from '../../engine/types';
 import { t } from '../../i18n/es';
 import { addToHistory, findSaved, getPrefs, isFavorite, newId, setPrefs, toggleFavorite, type SavedPrompt } from '../../lib/storage';
@@ -76,8 +76,10 @@ export default function Builder({ sectionId, area }: Props) {
   const spec = useMemo(() => buildSpec(area, selections, { advanced }), [area, selections, advanced]);
   const result = useMemo(() => adapter.format(spec, { lang, creativity }), [adapter, spec, lang, creativity]);
   const hasContent = spec.segments.length > 0 || spec.copy.length > 0;
-  const missing = missingSteps(area, selections, advanced).map((s) => s.title.es);
-  const filled = targetFilled(area, selections, advanced);
+  const missing = [
+    ...missingSteps(area, selections, advanced).map((s) => s.title.es),
+    ...missingTargets(area, selections, advanced).map((o) => t.builder.targetMissing(o.label.es)),
+  ];
   const hasSelections = Object.values(selections).some((v) => hasValue(v));
   const warnings: LocalizedText[] = findConflicts(area, selections).map(([a, b]) => ({ es: t.panel.conflict(a.label.es, b.label.es) }));
   if (spec.mode === 'edit' && spec.needsSecondImage) {
@@ -86,8 +88,6 @@ export default function Builder({ sectionId, area }: Props) {
 
   useEffect(() => setFavorite(hasContent && isFavorite(result.prompt)), [result.prompt, hasContent]);
 
-  // El ejemplo del paso de texto libre cambia según la operación elegida ("Ej.: un traje azul…").
-  const targetHint = area.steps.flatMap((s) => selectedOptions(s, selections)).find((o) => o.meta?.targetHint)?.meta?.targetHint;
 
   const update = (stepId: string, value: SelectionValue | undefined) =>
     setSelections((prev) => {
@@ -204,8 +204,6 @@ export default function Builder({ sectionId, area }: Props) {
               step={step}
               index={i}
               value={selections[step.id]}
-              placeholder={step.showIfMeta === 'needsTarget' ? targetHint : undefined}
-              optional={step.id === 'target' && filled}
               selections={selections}
               onChange={(v) => update(step.id, v)}
               onSetKey={setKey}

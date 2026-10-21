@@ -40,7 +40,7 @@ promptea/
 ```
 Usuario elige (botones / texto)
         │  Selections  { pasoId: id | ids | texto | campos,
-        │                "paso/opción/detalle": ids, "paso/opción/nota": texto }
+        │                "paso/opción/detalle": ids, "paso/opción/nota" y "paso/opción/target": texto }
         ▼
 buildSpec(area, selections)            src/engine/build.ts
         │  PromptSpec  { segmentos por rol, formato, evitar, colores, textos }
@@ -73,8 +73,14 @@ Una opción puede abrir **subopciones** (`Detail`): chips más específicos que 
 Cómo entran al prompt (`refineOption` en `build.ts`):
 - por defecto se suman después del fragmento de la opción, con una coma (`template` cambia la redacción);
 - si el prompt de la opción tiene `{d:<id>}`, el valor va ahí (y `default` si no se eligió nada);
-- `fillsTarget: true` completa el `{target}` de una operación de Edición y vuelve opcional el texto libre;
+- `fillsTarget: true` completa el `{target}` de una operación de Edición y vuelve opcional su texto libre;
 - `role` lo manda a otro bloque del prompt (se usa en el tipo de imagen y de pieza, que van pegados al sujeto).
+
+Las subopciones admiten varias por defecto; `one: true` en `d()` (o `type: 'single'`) las deja en una sola cuando dos se contradicen. Las que reemplazan un `{d:…}` tienen que ser de una sola (lo verifica `npm test`).
+
+Los pasos también: `type: 'multi'` con `max`, o `type: 'single'` con `one: { es: 'por qué' }`, que la interfaz muestra junto al cartel "Elegí una" (`npm test` exige el porqué). `join: 'sentences'` une varias opciones como oraciones separadas (operaciones de Edición) en vez de "a, b y c".
+
+Las operaciones de Edición con `meta.needsTarget` muestran su propio "Contalo con tus palabras" dentro del recuadro, guardado en `paso/opción/target` (`targetOf` en `build.ts`; los prompts guardados con el viejo paso `target` siguen funcionando). `missingTargets` lista las que faltan.
 
 Cada opción elegida tiene además una **nota** libre que va tal cual, pegada a su fragmento (ver decisión T15). Las claves en `Selections` son `paso/opción/detalle` y `paso/opción/nota`; al desmarcar una opción se borran (`pruneDetails`). `npm test` verifica que cada `{d:…}` tenga su subopción y que no haya ids repetidos.
 

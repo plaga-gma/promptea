@@ -284,6 +284,17 @@
 .note label {
   font-weight: 700;
   font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.refine .field textarea {
+  background: var(--surface);
+}
+
+.why .one {
+  color: var(--text);
 }
 
 .note-row {

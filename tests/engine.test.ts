@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ADAPTERS, getAdapter } from '../src/engine/adapters';
-import { buildSpec, detailKey, detailsOf, findConflicts, missingSteps, noteKey, pruneDetails } from '../src/engine/build';
+import { buildSpec, detailKey, detailsOf, findConflicts, missingTargets, noteKey, pruneDetails, targetKey } from '../src/engine/build';
 import { contrastRatio, harmonyPalette } from '../src/engine/color';
 import { SECTIONS, findArea } from '../src/sections';
 import { DIAGRAMS } from '../src/components/demos/diagrams';
@@ -307,13 +307,47 @@ describe('subopciones y notas', () => {
   });
 
   it('una subopción puede completar el objetivo: el texto libre pasa a ser opcional', () => {
-    const sel = { operacion: 'cambiar-cielo', [detailKey('operacion', 'cambiar-cielo', 'cielo')]: ['cielo-tormenta'] };
-    expect(missingSteps(edit, sel, false).map((s) => s.id)).not.toContain('target');
-    expect(missingSteps(edit, { operacion: 'cambiar-cielo' }, false).map((s) => s.id)).toContain('target');
+    const sel = { operacion: ['cambiar-cielo'], [detailKey('operacion', 'cambiar-cielo', 'cielo')]: ['cielo-tormenta'] };
+    expect(missingTargets(edit, sel, false)).toHaveLength(0);
+    expect(missingTargets(edit, { operacion: ['cambiar-cielo'] }, false).map((o) => o.id)).toEqual(['cambiar-cielo']);
     const p = getAdapter('generico').format(buildSpec(edit, sel, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
     expect(p).toContain('Replace the sky with a dramatic, dark stormy sky with heavy clouds, adjusting');
-    const both = buildSpec(edit, { ...sel, target: 'with lightning' }, { advanced: false });
+    const both = buildSpec(edit, { ...sel, [targetKey('operacion', 'cambiar-cielo')]: 'with lightning' }, { advanced: false });
     expect(both.segments[0]!.text.en).toContain('heavy clouds, with lightning, adjusting');
+  });
+
+  it('varias operaciones: cada una con su objetivo y en su propia oración', () => {
+    const sel = {
+      operacion: ['quitar-objeto', 'cambiar-cielo', 'retoque'],
+      [targetKey('operacion', 'quitar-objeto')]: 'the lamp post',
+      [detailKey('operacion', 'cambiar-cielo', 'cielo')]: ['cielo-atardecer'],
+    };
+    expect(missingTargets(edit, sel, false)).toHaveLength(0);
+    const p = getAdapter('generico').format(buildSpec(edit, sel, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
+    expect(p).toContain('Remove the lamp post from the photo and fill the area naturally so no trace remains. Replace the sky with a warm orange and pink sunset sky');
+    expect(p).toContain('match the new sky. Retouch the portrait naturally');
+    expect(findConflicts(edit, { operacion: ['quitar-fondo', 'cambiar-fondo'] })).toHaveLength(1);
+  });
+
+  it('varias subopciones y varias opciones por paso se combinan en una lista', () => {
+    const sel = {
+      ...genSel,
+      iluminacion: ['hora-dorada', 'neon'],
+      [detailKey('iluminacion', 'hora-dorada', 'direccion')]: ['ld-costado', 'ld-atras'],
+    };
+    const p = getAdapter('generico').format(buildSpec(gen, sel, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
+    expect(p).toContain('coming from the side, sculpting the shapes and coming from behind, with a glowing rim and ');
+  });
+
+  it('los pasos de una sola opción dicen por qué, y las subopciones de un solo valor son únicas', () => {
+    for (const section of SECTIONS)
+      for (const area of section.areas)
+        for (const step of area.steps) {
+          if ((step.type === 'single' || step.type === 'color') && step.options) expect(step.one?.es, `${area.id}/${step.id}`).toBeTruthy();
+          for (const o of step.options ?? [])
+            for (const d of detailsOf(step, o))
+              if (`${o.prompt.en}`.includes(`{d:${d.id}}`)) expect(d.type, `${o.id}/${d.id}`).toBe('single');
+        }
   });
 
   it('el tipo de imagen no se separa del sujeto', () => {

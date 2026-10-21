@@ -11,7 +11,8 @@ import { BLUR, o } from './_helpers';
  */
 
 interface DetailExtra {
-  multi?: boolean;
+  /** Elegir dos sería contradictorio (suave o fuerte, 2x o 4x): se elige una sola. */
+  one?: boolean;
   role?: Detail['role'];
   max?: number;
   template?: PromptText;
@@ -21,8 +22,8 @@ interface DetailExtra {
 }
 
 function d(id: string, label: string, options: Option[], extra: DetailExtra = {}): Detail {
-  const { multi, ...rest } = extra;
-  return { id, label: { es: label }, options, ...(multi ? { type: 'multi' as const } : {}), ...rest };
+  const { one, ...rest } = extra;
+  return { id, label: { es: label }, options, ...(one ? { type: 'single' as const } : {}), ...rest };
 }
 
 /** Puntito de color en la subopción. */
@@ -49,18 +50,18 @@ const TAMANO = d('tamano', 'Tamaño', [
   o('tam-chico', 'Chico, de detalle', 'small and subtle, as a discreet detail', 'chico y sutil, como un detalle discreto'),
   o('tam-real', 'A escala real', 'at a realistic scale relative to the scene', 'en una escala realista respecto de la escena'),
   o('tam-protagonista', 'Protagonista', 'large and prominent, as a main element', 'grande y destacado, como elemento principal'),
-]);
+], { one: true });
 
 export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
   'quitar-objeto': [
     d('relleno', 'Cómo rellenar el hueco', [
       o('rell-fondo', 'Continuar el fondo', 'continue the surrounding background seamlessly', 'continuá el fondo que lo rodea sin cortes'),
       o('rell-reconstruir', 'Reconstruir lo de atrás', 'realistically reconstruct whatever was hidden behind it', 'reconstruí de forma realista lo que quedaba tapado'),
-    ]),
+    ], { one: true }),
     d('rastros', 'Quitar también', [
       o('ras-sombra', 'Su sombra', 'also remove its shadow', 'quitá también su sombra'),
       o('ras-reflejo', 'Su reflejo', 'also remove its reflection', 'quitá también su reflejo'),
-    ], { multi: true }),
+    ]),
   ],
   'quitar-fondo': [
     d('fondo', 'Fondo final', [
@@ -69,11 +70,11 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('qf-negro', 'Negro', 'a plain black background', 'un fondo negro liso', { demo: dot('#111111') }),
       o('qf-gris', 'Gris de estudio', 'a seamless light gray studio background', 'un fondo gris claro de estudio, sin costuras', { demo: dot('#c9c9c9') }),
       o('qf-color', 'Un color liso', 'a solid color background (described in the note)', 'un fondo de color liso (indicado en la nota)', { hint: 'Escribí el color en la nota.', demo: dot('#6d4aff') }),
-    ], { default: { en: 'a plain white background', es: 'un fondo blanco liso' } }),
+    ], { one: true, default: { en: 'a plain white background', es: 'un fondo blanco liso' } }),
     d('bordes', 'Terminación', [
       o('qf-pelo', 'Cuidar el pelo', 'preserve fine hair strands and soft edges', 'conservá los pelos finos y los bordes suaves'),
       o('qf-sombra', 'Sombra suave al piso', 'add a soft, natural contact shadow under the subject', 'agregá una sombra de contacto suave y natural debajo del sujeto'),
-    ], { multi: true }),
+    ]),
   ],
   'cambiar-fondo': [
     d('ideas', 'Ideas de fondo', [
@@ -84,22 +85,22 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('cf-oficina', 'Oficina moderna', 'a bright, modern office interior', 'el interior de una oficina moderna y luminosa', { demo: dot('#e5e7eb', '#9aa5b1') }),
       o('cf-hogar', 'Living acogedor', 'a cozy living room with warm lamps', 'un living acogedor con lámparas cálidas', { demo: dot('#b07a4a', '#ffd9a0') }),
       o('cf-degradado', 'Degradado de color', 'a smooth colorful gradient backdrop', 'un fondo con un degradado de color suave', { demo: dot('#6d4aff', '#ff6b5b') }),
-    ], { fillsTarget: true }),
+    ], { one: true, fillsTarget: true }),
     d('integracion', 'Integración', [
       o('cf-desenfocado', 'Fondo nuevo desenfocado', 'with the new background slightly out of focus for depth', 'con el fondo nuevo levemente desenfocado para dar profundidad', { meta: { allow: BLUR } }),
       o('cf-sombras', 'Sombras coherentes', 'casting shadows that match the new environment', 'con sombras que coincidan con el nuevo entorno'),
-    ], { multi: true }),
+    ]),
   ],
   'desenfocar-fondo': [
     d('cuanto', 'Cuánto desenfoque', [
       o('df-suave', 'Suave', 'like a lens at f/4, so the background is soft but still recognizable', 'como un lente a f/4, con el fondo suave pero todavía reconocible'),
       o('df-medio', 'Medio', 'like a portrait lens at f/1.8', 'como un lente de retrato a f/1.8'),
       o('df-fuerte', 'Fuerte', 'like a fast lens at f/1.2, with a creamy, almost abstract background', 'como un lente luminoso a f/1.2, con un fondo cremoso y casi abstracto'),
-    ], { default: { en: 'like a portrait lens at f/1.8', es: 'como un lente de retrato a f/1.8' } }),
+    ], { one: true, default: { en: 'like a portrait lens at f/1.8', es: 'como un lente de retrato a f/1.8' } }),
     d('bokeh', 'Forma del bokeh', [
       o('bk-circulos', 'Círculos de luz', 'with round bokeh balls from the background lights', 'con círculos de bokeh en las luces del fondo'),
       o('bk-cremoso', 'Cremoso, sin formas', 'with a smooth, creamy blur and no distracting shapes', 'con un desenfoque liso y cremoso, sin formas que distraigan'),
-    ]),
+    ], { one: true }),
   ],
   'cambiar-cielo': [
     d('cielo', 'Tipo de cielo', [
@@ -110,11 +111,11 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('cielo-aurora', 'Aurora boreal', 'a night sky with green and violet northern lights', 'un cielo nocturno con una aurora boreal verde y violeta', { demo: dot('#0b1d2b', '#3ddc97') }),
       o('cielo-hora-azul', 'Hora azul', 'a deep blue twilight sky just after sunset', 'un cielo azul profundo de crepúsculo, justo después del atardecer', { demo: dot('#1d3557', '#457b9d') }),
       o('cielo-nublado', 'Nublado suave', 'a soft overcast sky with diffused light', 'un cielo nublado y suave con luz difusa', { demo: dot('#c9ced6', '#eef0f3') }),
-    ], { fillsTarget: true }),
+    ], { one: true, fillsTarget: true }),
     d('reflejos', 'Ajustar también', [
       o('cielo-agua', 'Reflejos en el agua', 'update the reflections in water and glass to match', 'actualizá los reflejos en el agua y los vidrios para que coincidan'),
       o('cielo-sombras', 'Dirección de las sombras', 'adjust the direction of the shadows to the new light', 'ajustá la dirección de las sombras a la nueva luz'),
-    ], { multi: true }),
+    ]),
   ],
   agregar: [DONDE, TAMANO],
   mover: [DONDE],
@@ -126,20 +127,20 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('rt-ojos', 'Ojos más vivos', 'make the eyes slightly brighter and clearer', 'hacé los ojos un poco más brillantes y claros'),
       o('rt-dientes', 'Dientes', 'whiten the teeth slightly and naturally', 'blanqueá los dientes apenas, con naturalidad'),
       o('rt-pelo', 'Pelitos sueltos', 'tidy up stray flyaway hairs', 'acomodá los pelitos sueltos'),
-    ], { multi: true }),
+    ]),
   ],
   restaurar: [
     d('ademas', 'Además', [
       o('rs-color', 'Colorearla', 'then colorize it with realistic, period-accurate colors', 'después coloreala con colores realistas y fieles a la época'),
       o('rs-caras', 'Recuperar las caras', 'carefully recover facial detail without changing anyone’s features', 'recuperá con cuidado el detalle de las caras sin cambiar los rasgos de nadie'),
-    ], { multi: true }),
+    ]),
   ],
   colorear: [
     d('paleta', 'Tipo de color', [
       o('col-natural', 'Natural', 'with natural, believable colors', 'con colores naturales y creíbles'),
       o('col-epoca', 'Apagado, de época', 'with soft, slightly muted colors like an early color print', 'con colores suaves y algo apagados, como una copia color antigua'),
       o('col-vivo', 'Vivo', 'with rich, vibrant colors', 'con colores intensos y vibrantes'),
-    ]),
+    ], { one: true }),
   ],
   expandir: [
     d('direccion', 'Hacia dónde', [
@@ -155,17 +156,17 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('mj-ruido', 'Ruido', 'with special care on removing noise', 'con especial cuidado en quitar el ruido'),
       o('mj-color', 'Color', 'with richer, more accurate colors', 'con colores más ricos y fieles'),
       o('mj-luz', 'Luz', 'with better balanced light', 'con una luz mejor equilibrada'),
-    ], { multi: true }),
+    ]),
   ],
   ampliar: [
     d('factor', 'Cuánto más grande', [
       o('amp-2x', '2 veces', 'at twice the original resolution', 'al doble de la resolución original'),
       o('amp-4x', '4 veces', 'at four times the original resolution', 'a cuatro veces la resolución original'),
-    ]),
+    ], { one: true }),
     d('tipo', 'Tipo de imagen', [
       o('amp-foto', 'Foto', 'keeping a natural photographic texture, without a plastic look', 'conservando una textura fotográfica natural, sin aspecto de plástico'),
       o('amp-ilustracion', 'Ilustración o logo', 'keeping clean, crisp lines and flat colors', 'conservando líneas limpias y nítidas y colores planos'),
-    ]),
+    ], { one: true }),
   ],
   exposicion: [
     d('problema', 'El problema', [
@@ -186,7 +187,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('mt-luz', 'Misma luz', 'pay special attention to matching the light direction', 'prestá especial atención a igualar la dirección de la luz'),
       o('mt-sombras', 'Sombras al piso', 'add matching contact shadows', 'agregá sombras de contacto que coincidan'),
       o('mt-grano', 'Mismo grano', 'match the grain and sharpness of both images', 'igualá el grano y la nitidez de las dos imágenes'),
-    ], { multi: true }),
+    ]),
   ],
   ropa: [
     d('ideas', 'Ideas de ropa', [
@@ -195,7 +196,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('rp-deportiva', 'Deportiva', 'sporty athletic wear', 'ropa deportiva'),
       o('rp-fiesta', 'De fiesta', 'an elegant evening outfit', 'un conjunto elegante de fiesta'),
       o('rp-invierno', 'De invierno', 'a warm winter coat and scarf', 'un abrigo de invierno y una bufanda'),
-    ], { fillsTarget: true }),
+    ], { max: 2, fillsTarget: true }),
   ],
   peinado: [
     d('corte', 'Corte', [
@@ -204,7 +205,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('pn-recogido', 'Recogido', 'hair tied up in a neat bun', 'el pelo recogido en un rodete prolijo'),
       o('pn-rulos', 'Con rulos', 'voluminous curly hair', 'pelo con rulos y volumen'),
       o('pn-rapado', 'Rapado', 'a buzz cut', 'el pelo rapado'),
-    ], { fillsTarget: true }),
+    ], { one: true, fillsTarget: true }),
     d('color', 'Color', [
       o('pc-rubio', 'Rubio', 'blonde', 'rubio', { demo: dot('#e8c872') }),
       o('pc-castano', 'Castaño', 'brown', 'castaño', { demo: dot('#6b4226') }),
@@ -212,7 +213,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('pc-pelirrojo', 'Pelirrojo', 'copper red', 'pelirrojo cobrizo', { demo: dot('#b5562c') }),
       o('pc-canoso', 'Canoso', 'silver gray', 'gris plateado', { demo: dot('#c0c0c0') }),
       o('pc-fantasia', 'Fantasía', 'pastel pink and lilac', 'rosa y lila pastel', { demo: dot('#f7a8d8', '#c3a6ff') }),
-    ], { fillsTarget: true }),
+    ], { one: true, fillsTarget: true }),
   ],
   expresion: [
     d('gesto', 'Gesto', [
@@ -220,7 +221,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('ex-dientes', 'Sonrisa amplia', 'a big smile showing the teeth', 'una sonrisa amplia mostrando los dientes'),
       o('ex-serio', 'Serio y seguro', 'a calm, confident neutral expression', 'una expresión neutra, calma y segura'),
       o('ex-ojos', 'Ojos abiertos', 'open eyes looking at the camera (fix any blink)', 'los ojos abiertos mirando a cámara (corrigiendo un parpadeo)'),
-    ], { fillsTarget: true }),
+    ], { max: 2, fillsTarget: true }),
   ],
   edad: [
     d('cambio', 'Cambio', [
@@ -228,7 +229,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('ed-nino', 'De chico', 'like a child of about 8 years old', 'como un chico de unos 8 años'),
       o('ed-mayor20', '20 años más', 'about 20 years older, with natural signs of age', 'unos 20 años mayor, con señales naturales de la edad'),
       o('ed-anciano', 'De anciano', 'like an elderly person of about 80, with gray hair and wrinkles', 'como una persona de unos 80 años, con canas y arrugas'),
-    ], { fillsTarget: true }),
+    ], { one: true, fillsTarget: true }),
   ],
   estacion: [
     d('ideas', 'Ideas', [
@@ -238,7 +239,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('es-verano', 'Verano soleado', 'a bright, sunny summer day', 'un día de verano luminoso y soleado', { demo: dot('#ffd166', '#4ea8de') }),
       o('es-lluvia', 'Lluvia', 'a rainy day with wet, reflective surfaces', 'un día de lluvia con superficies mojadas que reflejan', { demo: dot('#5c6b7a', '#9fb1c1') }),
       o('es-niebla', 'Niebla', 'a foggy morning with soft, misty light', 'una mañana de niebla con luz suave y brumosa', { demo: dot('#cfd6dc', '#eef1f3') }),
-    ], { fillsTarget: true }),
+    ], { max: 2, fillsTarget: true }),
   ],
   'angulo-camara': [
     d('vista', 'Vista', [
@@ -247,7 +248,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('av-frente', 'De frente', 'a straight-on frontal view', 'una vista frontal, de frente'),
       o('av-perfil', 'De perfil', 'a side profile view', 'una vista de perfil'),
       o('av-tres-cuartos', 'Tres cuartos', 'a three-quarter view', 'una vista de tres cuartos'),
-    ], { fillsTarget: true }),
+    ], { one: true, fillsTarget: true }),
   ],
   'retrato-pro': [
     d('fondo', 'Fondo', [
@@ -255,12 +256,12 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('rpf-blanco', 'Blanco', 'use a clean white backdrop', 'usá un fondo blanco limpio', { demo: dot('#ffffff') }),
       o('rpf-oficina', 'Oficina desenfocada', 'use a softly blurred modern office behind', 'usá de fondo una oficina moderna desenfocada', { demo: dot('#d9dde3', '#8a96a3'), meta: { allow: BLUR } }),
       o('rpf-color', 'Color de marca', 'use a solid color backdrop (color in the note)', 'usá un fondo de color liso (el color va en la nota)', { demo: dot('#6d4aff') }),
-    ]),
+    ], { one: true }),
     d('ropa', 'Ropa', [
       o('rpr-formal', 'Formal', 'formal suit or blazer', 'traje o saco formal'),
       o('rpr-smart', 'Elegante sport', 'smart casual: a blazer over a plain shirt', 'elegante sport: saco sobre una camisa lisa'),
       o('rpr-igual', 'La misma', 'keep the original clothing', 'mantené la ropa original'),
-    ]),
+    ], { one: true }),
   ],
   'producto-pro': [
     d('escena', 'Escena', [
@@ -270,14 +271,14 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('pp-color', 'Fondo de color', 'instead use a bold solid color backdrop that complements the product', 'en cambio, usá un fondo de color intenso que combine con el producto', { demo: dot('#ff6b5b', '#ffd166') }),
       o('pp-flotando', 'Flotando', 'make it float slightly with a soft shadow below', 'hacé que flote apenas, con una sombra suave debajo'),
       o('pp-uso', 'En uso', 'instead show it in a natural lifestyle scene, in use', 'en cambio, mostralo en uso, en una escena cotidiana'),
-    ]),
+    ], { one: true }),
   ],
   'boceto-real': [
     d('resultado', 'Resultado', [
       o('br-foto', 'Foto realista', 'as a photorealistic photo', 'como una foto realista'),
       o('br-3d', 'Render 3D', 'as a polished 3D render', 'como un render 3D prolijo'),
       o('br-ilustracion', 'Ilustración terminada', 'as a finished, fully colored illustration', 'como una ilustración terminada y a todo color'),
-    ]),
+    ], { one: true }),
   ],
   'color-selectivo': [
     d('color', 'Color que queda', [
@@ -286,7 +287,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('cs-azul', 'Azul', 'the blue element', 'el elemento azul', { demo: dot('#1d4ed8') }),
       o('cs-verde', 'Verde', 'the green element', 'el elemento verde', { demo: dot('#2a9d8f') }),
       o('cs-sujeto', 'El sujeto principal', 'the main subject', 'el sujeto principal'),
-    ], { fillsTarget: true }),
+    ], { max: 2, fillsTarget: true }),
   ],
   envejecer: [
     d('marcas', 'Marcas del tiempo', [
@@ -294,7 +295,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('env-dobleces', 'Dobleces', 'with a visible fold crease', 'con la marca de un doblez'),
       o('env-rayas', 'Rayas', 'with fine scratches', 'con rayas finas'),
       o('env-limpia', 'Limpia, sin daños', 'clean and well preserved, with no damage', 'limpia y bien conservada, sin daños'),
-    ], { multi: true, max: 2 }),
+    ], { max: 2 }),
   ],
   'doble-exposicion': [
     d('imagen', 'Qué rellena la silueta', [
@@ -304,7 +305,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('dx-montanas', 'Montañas', 'snowy mountains', 'montañas nevadas', { demo: dot('#6c757d', '#f8f9fa') }),
       o('dx-galaxia', 'Galaxia', 'a starry galaxy', 'una galaxia llena de estrellas', { demo: dot('#10002b', '#c77dff') }),
       o('dx-flores', 'Flores', 'blooming wildflowers', 'flores silvestres en flor', { demo: dot('#ff8fab', '#ffe5ec') }),
-    ], { fillsTarget: true }),
+    ], { max: 2, fillsTarget: true }),
   ],
   neon: [
     d('color', 'Color del neón', [
@@ -313,18 +314,18 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('neon-violeta', 'Violeta', 'in vivid purple', 'en violeta intenso', { demo: dot('#9d4edd') }),
       o('neon-verde', 'Verde', 'in acid green', 'en verde ácido', { demo: dot('#39ff14') }),
       o('neon-multi', 'Dos colores', 'in a pink-to-cyan gradient', 'en un degradado de rosa a celeste', { demo: dot('#ff2e88', '#00e5ff') }),
-    ], { template: { en: 'the neon glow {value}', es: 'el neón {value}' } }),
+    ], { one: true, template: { en: 'the neon glow {value}', es: 'el neón {value}' } }),
     d('grosor', 'Grosor', [
       o('neon-fino', 'Fino', 'with a thin, precise line', 'con una línea fina y precisa'),
       o('neon-grueso', 'Grueso', 'with a thick, bold line', 'con una línea gruesa y marcada'),
-    ]),
+    ], { one: true }),
   ],
   dispersion: [
     d('hacia', 'Hacia dónde', [
       o('dp-derecha', 'A la derecha', 'drifting to the right', 'que se alejan hacia la derecha'),
       o('dp-izquierda', 'A la izquierda', 'drifting to the left', 'que se alejan hacia la izquierda'),
       o('dp-arriba', 'Hacia arriba', 'rising upward', 'que suben'),
-    ]),
+    ], { one: true }),
     d('particulas', 'Partículas', [
       o('dp-fragmentos', 'Fragmentos', 'as sharp shattered fragments', 'como fragmentos filosos'),
       o('dp-polvo', 'Polvo o arena', 'as fine dust and sand', 'como polvo fino y arena'),
@@ -336,11 +337,11 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
     d('borde', 'Borde', [
       o('st-grueso', 'Blanco grueso', 'keep the white border thick', 'mantené el borde blanco grueso'),
       o('st-fino', 'Blanco fino', 'make the white border thin instead', 'en cambio, que el borde blanco sea fino'),
-    ]),
+    ], { one: true }),
     d('estilo', 'Estilo', [
       o('st-foto', 'Foto tal cual', 'keep the subject photographic', 'mantené al sujeto como foto'),
       o('st-dibujo', 'Ilustrado', 'redraw the subject as a clean cartoon illustration', 'redibujá al sujeto como una ilustración de dibujo animado prolija'),
-    ]),
+    ], { one: true }),
   ],
   texto: [
     d('estilo', 'Estilo del texto', [
@@ -349,7 +350,7 @@ export const DETALLES_OPERACIONES: Record<string, Detail[]> = {
       o('tx-neon', 'Neón', 'as a glowing neon sign', 'como un cartel de neón encendido'),
       o('tx-3d', 'Letras 3D', 'as bold 3D letters', 'como letras 3D gruesas'),
       o('tx-tiza', 'Tiza en pizarra', 'as chalk lettering on a blackboard', 'como letras de tiza en un pizarrón'),
-    ]),
+    ], { one: true }),
   ],
 };
 
@@ -366,7 +367,7 @@ export const DETALLES_MEDIOS: Record<string, Detail[]> = {
       o('fm-comida', 'Comida', 'food', 'gastronómica'),
       o('fm-calle', 'Calle', 'street', 'callejera'),
       o('fm-moda', 'Moda', 'fashion', 'de moda'),
-    ]),
+    ], { one: true }),
   ],
   ilustracion: [
     d('acabado', 'Acabado', [
@@ -374,7 +375,7 @@ export const DETALLES_MEDIOS: Record<string, Detail[]> = {
       o('im-lineal', 'Línea y color plano', 'with clean ink lines and flat colors', 'con líneas de tinta limpias y colores planos'),
       o('im-libro', 'Libro infantil', "like a children's book illustration", 'como una ilustración de libro infantil'),
       o('im-editorial', 'Editorial', 'like a magazine editorial illustration', 'como una ilustración editorial de revista'),
-    ], { role: 'style' }),
+    ], { max: 2, role: 'style' }),
   ],
   dibujo: [
     d('herramienta', 'Con qué', [
@@ -382,7 +383,7 @@ export const DETALLES_MEDIOS: Record<string, Detail[]> = {
       o('dm-tinta', 'Tinta', 'in black ink with fine pen lines', 'en tinta negra con trazos finos de pluma'),
       o('dm-carbonilla', 'Carbonilla', 'in charcoal with smudged shadows', 'en carbonilla con sombras difuminadas'),
       o('dm-birome', 'Birome', 'in blue ballpoint pen', 'en birome azul'),
-    ], { role: 'style' }),
+    ], { max: 2, role: 'style' }),
   ],
   pintura: [
     d('tecnica', 'Técnica', [
@@ -390,7 +391,7 @@ export const DETALLES_MEDIOS: Record<string, Detail[]> = {
       o('pm-acuarela', 'Acuarela', 'in watercolor', 'en acuarela'),
       o('pm-acrilico', 'Acrílico', 'in acrylic paint', 'en acrílico'),
       o('pm-gouache', 'Gouache', 'in gouache', 'en gouache'),
-    ], { role: 'style' }),
+    ], { max: 2, role: 'style' }),
   ],
   render3d: [
     d('look', 'Look del 3D', [
@@ -398,21 +399,21 @@ export const DETALLES_MEDIOS: Record<string, Detail[]> = {
       o('3d-realista', 'Realista', 'photorealistic, with physically based materials', 'fotorrealista, con materiales físicos realistas'),
       o('3d-clay', 'Arcilla', 'as a matte clay render', 'como un render mate de arcilla'),
       o('3d-isometrico', 'Isométrico', 'as a cute isometric miniature', 'como una miniatura isométrica'),
-    ], { role: 'style' }),
+    ], { one: true, role: 'style' }),
   ],
   vectorial: [
     d('acabado', 'Acabado', [
       o('vm-plano', 'Plano', 'with completely flat colors', 'con colores completamente planos'),
       o('vm-degradados', 'Con degradados', 'with subtle gradients', 'con degradados sutiles'),
       o('vm-lineal', 'Solo líneas', 'in a monoline outline style', 'en estilo lineal de trazo único'),
-    ], { role: 'style' }),
+    ], { one: true, role: 'style' }),
   ],
   collage: [
     d('materiales', 'Materiales', [
       o('cm-revista', 'Recortes de revista', 'made of magazine cutouts', 'hecho con recortes de revista'),
       o('cm-papeles', 'Papeles de color', 'made of torn colored paper', 'hecho con papeles de color rasgados'),
       o('cm-fotos', 'Fotos antiguas', 'made of vintage photographs', 'hecho con fotos antiguas'),
-    ], { multi: true, max: 2, role: 'style' }),
+    ], { max: 2, role: 'style' }),
   ],
 };
 
@@ -420,7 +421,7 @@ export const DETALLES_MEDIOS: Record<string, Detail[]> = {
 export const DETALLE_FUERZA_ESTILO = d('fuerza', 'Cuánto se nota el estilo', [
   o('fz-toque', 'Un toque', 'only as a subtle influence', 'solo como una influencia sutil'),
   o('fz-pleno', 'Bien marcado', 'fully committed to this style', 'con este estilo bien marcado'),
-]);
+], { one: true });
 
 export const DETALLES_ESTILOS: Record<string, Detail[]> = {
   anime: [
@@ -428,52 +429,52 @@ export const DETALLES_ESTILOS: Record<string, Detail[]> = {
       o('an-90', 'Retro 90s', '1990s cel animation look', 'look de animación en acetato de los 90'),
       o('an-moderno', 'Moderno', 'modern, clean digital anime look', 'look de anime digital moderno y limpio'),
       o('an-pelicula', 'Película de anime', 'lush anime feature film look with painted backgrounds', 'look de película de anime, con fondos pintados'),
-    ]),
+    ], { one: true }),
   ],
   acuarela: [
     d('manera', 'Manera', [
       o('ac-suelta', 'Suelta y húmeda', 'loose wet-on-wet washes and soft bleeds', 'aguadas sueltas, húmedo sobre húmedo, con manchas que se mezclan'),
       o('ac-detallada', 'Precisa', 'precise, detailed watercolor with fine lines', 'acuarela precisa y detallada, con líneas finas'),
       o('ac-salpicada', 'Con salpicaduras', 'with paint splatters and visible paper', 'con salpicaduras y el papel a la vista'),
-    ]),
+    ], { max: 2 }),
   ],
   oleo: [
     d('pincelada', 'Pincelada', [
       o('ol-empaste', 'Empaste grueso', 'thick impasto brushstrokes', 'pinceladas gruesas con empaste'),
       o('ol-liso', 'Lisa, clásica', 'smooth, blended classical finish', 'acabado clásico, liso y fundido'),
-    ]),
+    ], { one: true }),
   ],
   pixel: [
     d('resolucion', 'Resolución', [
       o('px-8', '8 bits', '8-bit NES-style with a tiny palette', 'estilo 8 bits como NES, con muy pocos colores'),
       o('px-16', '16 bits', '16-bit SNES-style with richer shading', 'estilo 16 bits como SNES, con más sombreado'),
       o('px-hd', 'Pixel art moderno', 'modern high-detail pixel art with soft lighting', 'pixel art moderno y detallado, con luces suaves'),
-    ]),
+    ], { one: true }),
   ],
   comic: [
     d('escuela', 'Escuela', [
       o('cm-americano', 'Americano', 'American superhero comic style with bold inks', 'estilo cómic de superhéroes americano, con tinta marcada'),
       o('cm-europeo', 'Europeo (línea clara)', 'European ligne claire style with clean even lines', 'estilo europeo de línea clara, con trazos limpios y parejos'),
       o('cm-indie', 'Independiente', 'indie comic style with expressive hand-drawn lines', 'estilo cómic independiente, con trazos expresivos a mano'),
-    ]),
+    ], { one: true }),
   ],
   lowpoly: [
     d('acabado', 'Acabado', [
       o('lp-plano', 'Caras planas', 'flat-shaded faceted polygons', 'polígonos facetados con sombreado plano'),
       o('lp-suave', 'Con luz suave', 'with soft lighting and gentle gradients', 'con luz suave y degradados delicados'),
-    ]),
+    ], { one: true }),
   ],
   cyberpunk: [
     d('ambiente', 'Ambiente', [
       o('cy-lluvia', 'Lluvia y neón', 'rain-soaked streets reflecting neon signs', 'calles mojadas por la lluvia que reflejan carteles de neón'),
       o('cy-dia', 'De día, desértico', 'harsh daylight and dusty, sun-bleached megacity', 'luz de día dura y una megaciudad polvorienta y quemada por el sol'),
-    ]),
+    ], { one: true }),
   ],
   minimalista: [
     d('fondo', 'Fondo', [
       o('mn-blanco', 'Blanco', 'on an empty white background', 'sobre un fondo blanco vacío'),
       o('mn-color', 'Color pleno', 'on a single solid color background', 'sobre un fondo de un solo color'),
-    ]),
+    ], { one: true }),
   ],
   'fantasia-epica': [
     d('escala', 'Escala', [
@@ -496,40 +497,40 @@ export const DETALLES_LUZ: Detail[] = [
     o('ld-costado', 'De costado', 'coming from the side, sculpting the shapes', 'que viene de costado y marca los volúmenes'),
     o('ld-atras', 'Desde atrás', 'coming from behind, with a glowing rim', 'que viene desde atrás, con un borde luminoso'),
     o('ld-arriba', 'Desde arriba', 'coming from above', 'que viene desde arriba'),
-  ], { except: LUZ_CON_DIRECCION }),
+  ], { max: 2, except: LUZ_CON_DIRECCION }),
   d('sombras', 'Sombras', [
     o('ls-suaves', 'Suaves', 'with soft, gradual shadows', 'con sombras suaves y graduales'),
     o('ls-duras', 'Duras', 'with crisp, hard-edged shadows', 'con sombras duras y bien definidas'),
-  ], { except: ['clave-alta', 'clave-baja', 'claroscuro', 'nublado', 'flash', 'mediodia', 'estudio'] }),
+  ], { one: true, except: ['clave-alta', 'clave-baja', 'claroscuro', 'nublado', 'flash', 'mediodia', 'estudio'] }),
 ];
 
 export const DETALLES_PALETA: Detail[] = [
   d('saturacion', 'Saturación', [
     o('sat-apagada', 'Apagada', 'muted and desaturated', 'apagada y desaturada'),
     o('sat-vibrante', 'Vibrante', 'rich and highly saturated', 'intensa y muy saturada'),
-  ]),
+  ], { one: true }),
   d('contraste', 'Contraste', [
     o('con-suave', 'Suave', 'with low contrast between the colors', 'con poco contraste entre los colores'),
     o('con-alto', 'Alto', 'with strong contrast between the colors', 'con mucho contraste entre los colores'),
-  ]),
+  ], { one: true }),
   d('proporcion', 'Reparto', [
     o('rep-60', '60-30-10', 'following the 60-30-10 rule: one dominant color, one secondary and a small accent', 'con la regla 60-30-10: un color dominante, uno secundario y un acento chico'),
     o('rep-acento', 'Un solo acento', 'mostly neutral with a single bright accent color', 'casi todo neutro, con un único color de acento'),
-  ]),
+  ], { one: true }),
 ];
 
 export const DETALLES_ATMOSFERA: Detail[] = [
   d('intensidad', 'Intensidad', [
     o('at-sutil', 'Sutil', 'conveyed subtly', 'transmitida con sutileza'),
     o('at-intensa', 'Intensa', 'conveyed intensely', 'transmitida con intensidad'),
-  ]),
+  ], { one: true }),
 ];
 
 export const DETALLES_TEXTURA: Detail[] = [
   d('intensidad', 'Cuánto se nota', [
     o('tx-sutil', 'Apenas', 'very subtle', 'muy sutil'),
     o('tx-marcada', 'Bien visible', 'clearly visible', 'bien visible'),
-  ]),
+  ], { one: true }),
 ];
 
 export const DETALLES_MATERIAL: Detail[] = [
@@ -537,7 +538,7 @@ export const DETALLES_MATERIAL: Detail[] = [
     o('mat-pulido', 'Pulido', 'polished and glossy', 'pulido y brillante'),
     o('mat-mate', 'Mate', 'with a matte, satin finish', 'con acabado mate satinado'),
     o('mat-gastado', 'Gastado', 'worn and weathered', 'gastado y envejecido'),
-  ]),
+  ], { one: true }),
 ];
 
 export const DETALLES_CLIMA: Record<string, Detail[]> = {
@@ -545,19 +546,19 @@ export const DETALLES_CLIMA: Record<string, Detail[]> = {
     d('cantidad', 'Cuánta lluvia', [
       o('ll-llovizna', 'Llovizna', 'a light drizzle', 'una llovizna suave'),
       o('ll-fuerte', 'Lluvia fuerte', 'heavy pouring rain with visible streaks', 'lluvia fuerte con gotas visibles'),
-    ]),
+    ], { one: true }),
   ],
   nieve: [
     d('estado', 'La nieve', [
       o('nv-cayendo', 'Cayendo', 'snowflakes falling', 'copos cayendo'),
       o('nv-caida', 'Ya caída', 'a thick blanket of snow on the ground', 'una capa gruesa de nieve en el piso'),
-    ], { multi: true }),
+    ]),
   ],
   niebla: [
     d('densidad', 'Densidad', [
       o('nb-leve', 'Leve', 'a light mist', 'una bruma leve'),
       o('nb-densa', 'Densa', 'a thick fog that hides the distance', 'una niebla densa que esconde lo lejano'),
-    ]),
+    ], { one: true }),
   ],
 };
 
@@ -567,25 +568,25 @@ export const DETALLES_FILTROS: Record<string, Detail[]> = {
       o('vt-60', 'Años 60', 'like a 1960s print', 'como una copia de los 60'),
       o('vt-70', 'Años 70', 'like a 1970s print', 'como una copia de los 70'),
       o('vt-80', 'Años 80', 'like a 1980s print', 'como una copia de los 80'),
-    ]),
+    ], { one: true }),
   ],
   pelicula: [
     d('grano', 'Grano', [
       o('pl-fino', 'Fino', 'fine grain', 'grano fino'),
       o('pl-marcado', 'Marcado', 'heavy, visible grain', 'grano grueso y visible'),
-    ]),
+    ], { one: true }),
   ],
   bn: [
     d('contraste', 'Contraste', [
       o('bn-suave', 'Suave', 'soft, gentle contrast', 'contraste suave'),
       o('bn-duro', 'Duro', 'hard, punchy contrast', 'contraste duro'),
-    ]),
+    ], { one: true }),
   ],
   glitch: [
     d('cuanto', 'Cuánto glitch', [
       o('gl-leve', 'Leve', 'with only a few subtle glitches', 'con apenas algunas fallas sutiles'),
       o('gl-fuerte', 'Fuerte', 'with heavy datamoshing and corrupted blocks', 'con mucha distorsión y bloques corruptos'),
-    ]),
+    ], { one: true }),
   ],
 };
 
@@ -612,21 +613,21 @@ export const DETALLES_PIEZAS: Record<string, Detail[]> = {
       o('po-lanzamiento', 'Lanzamiento', 'announcing a new product launch', 'para anunciar el lanzamiento de un producto'),
       o('po-evento', 'Evento', 'announcing an event', 'para anunciar un evento'),
       o('po-frase', 'Frase o tip', 'sharing a quote or a tip', 'para compartir una frase o un consejo'),
-    ], { role: 'setting' }),
+    ], { one: true, role: 'setting' }),
   ],
   historia: [
     d('objetivo', 'Objetivo', [
       o('ho-promo', 'Promoción', 'announcing a promotion', 'para anunciar una promoción'),
       o('ho-encuesta', 'Encuesta o pregunta', 'leaving room for an interactive poll sticker', 'dejando lugar para un sticker de encuesta'),
       o('ho-novedad', 'Novedad', 'sharing a piece of news', 'para contar una novedad'),
-    ], { role: 'setting' }),
+    ], { one: true, role: 'setting' }),
   ],
   miniatura: [
     d('recursos', 'Recursos que funcionan', [
       o('mn-cara', 'Cara expresiva', 'a person with an exaggerated, expressive face', 'una persona con la cara muy expresiva'),
       o('mn-flechas', 'Flechas y círculos', 'bold arrows and circles pointing at the key detail', 'flechas y círculos marcados que señalan el detalle clave'),
       o('mn-contraste', 'Mucho contraste', 'very high contrast so it stands out among other thumbnails', 'mucho contraste para que se destaque entre otras miniaturas'),
-    ], { multi: true, role: 'setting' }),
+    ], { role: 'setting' }),
   ],
   invitacion: [
     d('evento', 'Evento', [
@@ -635,7 +636,7 @@ export const DETALLES_PIEZAS: Record<string, Detail[]> = {
       o('inv-bebe', 'Baby shower', 'for a baby shower', 'para un baby shower'),
       o('inv-infantil', 'Fiesta infantil', "for a children's party", 'para una fiesta infantil'),
       o('inv-empresa', 'Evento de empresa', 'for a corporate event', 'para un evento de empresa'),
-    ], { role: 'setting' }),
+    ], { one: true, role: 'setting' }),
   ],
   'portada-libro': [
     d('genero', 'Género', [
@@ -644,7 +645,7 @@ export const DETALLES_PIEZAS: Record<string, Detail[]> = {
       o('pl-fantasia', 'Fantasía', 'for a fantasy novel', 'para una novela de fantasía'),
       o('pl-infantil', 'Infantil', "for a children's book", 'para un libro infantil'),
       o('pl-ensayo', 'No ficción', 'for a non-fiction book', 'para un libro de no ficción'),
-    ], { role: 'setting' }),
+    ], { max: 2, role: 'setting' }),
   ],
   'portada-album': [
     d('genero', 'Género musical', [
@@ -653,7 +654,7 @@ export const DETALLES_PIEZAS: Record<string, Detail[]> = {
       o('pa-urbano', 'Urbano / trap', 'for a hip-hop or trap album', 'para un disco de hip hop o trap'),
       o('pa-indie', 'Indie / folk', 'for an indie folk album', 'para un disco indie folk'),
       o('pa-jazz', 'Jazz', 'for a jazz album', 'para un disco de jazz'),
-    ], { role: 'setting' }),
+    ], { max: 2, role: 'setting' }),
   ],
   etiqueta: [
     d('producto', 'Producto', [
@@ -662,20 +663,20 @@ export const DETALLES_PIEZAS: Record<string, Detail[]> = {
       o('et-frasco', 'Frasco', 'for a jar of homemade preserves', 'para un frasco de dulce casero'),
       o('et-cafe', 'Café', 'for a coffee bag', 'para una bolsa de café'),
       o('et-cosmetica', 'Cosmética', 'for a cosmetics bottle', 'para un frasco de cosmética'),
-    ], { role: 'setting' }),
+    ], { one: true, role: 'setting' }),
   ],
   remera: [
     d('estampado', 'Cómo se estampa', [
       o('rm-serigrafia', 'Serigrafía', 'designed for screen printing, with 2 to 3 flat colors', 'pensado para serigrafía, con 2 o 3 colores planos'),
       o('rm-color', 'A todo color', 'designed for full-color DTF printing', 'pensado para estampa DTF a todo color'),
       o('rm-bordado', 'Bordado', 'designed to be embroidered, with simple shapes', 'pensado para bordar, con formas simples'),
-    ], { role: 'setting' }),
+    ], { one: true, role: 'setting' }),
   ],
   patron: [
     d('escala', 'Escala', [
       o('pt-chico', 'Chico y denso', 'with small, densely packed motifs', 'con motivos chicos y apretados'),
       o('pt-grande', 'Grande y aireado', 'with large, widely spaced motifs', 'con motivos grandes y espaciados'),
-    ], { role: 'setting' }),
+    ], { one: true, role: 'setting' }),
   ],
   infografia: [
     d('tipo', 'Tipo', [
@@ -683,14 +684,14 @@ export const DETALLES_PIEZAS: Record<string, Detail[]> = {
       o('if-comparacion', 'Comparación', 'comparing two options side by side', 'que compara dos opciones lado a lado'),
       o('if-linea', 'Línea de tiempo', 'as a timeline', 'como una línea de tiempo'),
       o('if-datos', 'Datos y números', 'highlighting key statistics with simple charts', 'que destaca datos clave con gráficos simples'),
-    ], { role: 'setting' }),
+    ], { max: 2, role: 'setting' }),
   ],
   web: [
     d('seccion', 'Qué pantalla', [
       o('wb-landing', 'Portada (landing)', 'showing a landing page hero section', 'que muestra la portada de una landing'),
       o('wb-tienda', 'Tienda', 'showing an online store product grid', 'que muestra la grilla de productos de una tienda'),
       o('wb-portfolio', 'Portfolio', 'showing a portfolio gallery', 'que muestra la galería de un portfolio'),
-    ], { role: 'setting' }),
+    ], { one: true, role: 'setting' }),
   ],
   'fondo-pantalla': [
     d('dispositivo', 'Para', [
@@ -706,14 +707,14 @@ export const DETALLES_TIPOS_LOGO: Record<string, Detail[]> = {
       o('ms-tierna', 'Tierna', 'cute and friendly', 'tierna y amigable'),
       o('ms-deportiva', 'Deportiva', 'bold and fierce, like a sports team mascot', 'audaz y feroz, como la mascota de un equipo'),
       o('ms-simpatica', 'Simpática y retro', 'charming retro cartoon style', 'simpática, con estilo de dibujo animado retro'),
-    ]),
+    ], { one: true }),
   ],
   emblema: [
     d('forma', 'Forma', [
       o('em-circulo', 'Círculo', 'inside a circular badge', 'dentro de una insignia circular'),
       o('em-escudo', 'Escudo', 'inside a shield', 'dentro de un escudo'),
       o('em-sello', 'Sello', 'like a vintage stamp seal', 'como un sello antiguo'),
-    ]),
+    ], { one: true }),
   ],
 };
 
@@ -724,16 +725,16 @@ export const DETALLES_TIPOGRAFIA: Detail[] = [
     o('tp-regular', 'Normal', 'in a regular weight', 'en peso normal'),
     o('tp-negrita', 'Negrita', 'in a bold weight', 'en negrita'),
     o('tp-black', 'Extra gruesa', 'in an extra-bold black weight', 'en peso extra grueso'),
-  ], { except: ['extra-negrita', 'inflada', 'contorno', 'neon-tipo', 'pixel'] }),
+  ], { one: true, except: ['extra-negrita', 'inflada', 'contorno', 'neon-tipo', 'pixel'] }),
   d('caja', 'Mayúsculas', [
     o('tc-mayus', 'Todo en mayúsculas', 'set in all caps', 'todo en mayúsculas'),
     o('tc-minus', 'Todo en minúsculas', 'set in all lowercase', 'todo en minúsculas'),
     o('tc-normal', 'Normal', 'in sentence case', 'con mayúscula inicial'),
-  ]),
+  ], { one: true }),
   d('espaciado', 'Espaciado', [
     o('te-apretado', 'Apretado', 'with tight letter spacing', 'con las letras apretadas'),
     o('te-amplio', 'Amplio', 'with wide letter spacing', 'con las letras bien separadas'),
-  ]),
+  ], { one: true }),
 ];
 
 export const DETALLES_ELEMENTOS: Record<string, Detail[]> = {
@@ -743,13 +744,13 @@ export const DETALLES_ELEMENTOS: Record<string, Detail[]> = {
       o('ef-triangulos', 'Triángulos', 'triangles', 'triángulos'),
       o('ef-cuadrados', 'Cuadrados', 'squares and rectangles', 'cuadrados y rectángulos'),
       o('ef-ondas', 'Ondas', 'wavy lines', 'líneas onduladas'),
-    ], { multi: true, max: 2, template: { en: 'mainly {value}', es: 'sobre todo {value}' } }),
+    ], { max: 2, template: { en: 'mainly {value}', es: 'sobre todo {value}' } }),
   ],
   'e-lineas': [
     d('grosor', 'Grosor', [
       o('el-finas', 'Finas', 'thin and delicate', 'finas y delicadas'),
       o('el-gruesas', 'Gruesas', 'thick and bold', 'gruesas y marcadas'),
-    ]),
+    ], { one: true }),
   ],
 };
 
@@ -760,13 +761,13 @@ export const DETALLES_FONDOS: Record<string, Detail[]> = {
       o('ft-concreto', 'Concreto', 'of raw concrete', 'de concreto'),
       o('ft-tela', 'Tela', 'of linen fabric', 'de tela de lino'),
       o('ft-madera', 'Madera', 'of light wood', 'de madera clara'),
-    ]),
+    ], { one: true }),
   ],
   'f-degradado': [
     d('tipo', 'Tipo', [
       o('fd-suave', 'Suave', 'soft and subtle', 'suave y sutil'),
       o('fd-vibrante', 'Vibrante', 'bold and vibrant', 'intenso y vibrante'),
       o('fd-radial', 'Radial', 'radial, glowing from the center', 'radial, que brilla desde el centro'),
-    ]),
+    ], { one: true }),
   ],
 };

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'preact/hooks';
-import { detailKey, detailsOf, NOTE_MAX, noteKey } from '../../engine/build';
+import { detailKey, detailsOf, NOTE_MAX, noteKey, targetKey, targetOf } from '../../engine/build';
 import { Fragment } from 'preact';
 import { harmonyPalette, bestTextPair, HARMONIES, type Harmony } from '../../engine/color';
 import type { Detail, Option, SegmentRole, SelectionValue, Selections, Step } from '../../engine/types';
@@ -12,10 +12,6 @@ interface Props {
   step: Step;
   index: number;
   value: SelectionValue | undefined;
-  /** Reemplaza el ejemplo del paso de texto libre (depende de otra elección). */
-  placeholder?: string;
-  /** El paso es obligatorio pero ya se completó de otra forma (una subopción llenó el objetivo). */
-  optional?: boolean;
   /** Todas las elecciones: las subopciones y notas de cada opción viven en claves propias. */
   selections: Selections;
   onChange: (value: SelectionValue | undefined) => void;
@@ -64,7 +60,7 @@ function DetailRow({ step, option, detail, selections, onSetKey }: { step: Step;
   const key = detailKey(step.id, option.id, detail.id);
   const v = selections[key];
   const chosen = Array.isArray(v) ? v : typeof v === 'string' ? [v] : [];
-  const multi = detail.type === 'multi';
+  const multi = detail.type !== 'single';
   const max = detail.max ?? Infinity;
   const toggle = (id: string) => {
     let next: string[];
@@ -77,7 +73,7 @@ function DetailRow({ step, option, detail, selections, onSetKey }: { step: Step;
     <div class="detail" role="group" aria-label={detail.label.es}>
       <span class="detail-label">
         {detail.label.es}
-        {multi && <span class="muted"> · {detail.max ? t.builder.upTo(detail.max).toLowerCase() : 'podés elegir varias'}</span>}
+        <span class="muted"> · {!multi ? t.builder.pickOneDetail : detail.max ? t.builder.upTo(detail.max).toLowerCase() : t.builder.pickMany}</span>
       </span>
       <div class="chips">
         {detail.options.map((o) => (
@@ -87,6 +83,34 @@ function DetailRow({ step, option, detail, selections, onSetKey }: { step: Step;
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** "Contalo con tus palabras" de una operación de Edición: qué quitar, qué cambiar, por qué fondo… */
+function TargetField({ step, option, selections, onSetKey }: { step: Step; option: Option } & Pick<Props, 'selections' | 'onSetKey'>) {
+  const key = targetKey(step.id, option.id);
+  const v = selections[key];
+  const text = typeof v === 'string' ? v : '';
+  const fromDetail = detailsOf(step, option).some((d) => d.fillsTarget);
+  // Con una idea elegida arriba (un tipo de cielo, un corte de pelo…), escribir pasa a ser opcional.
+  const filled = Boolean(targetOf(step, option, { ...selections, [key]: '' }));
+  const id = `target-${step.id}-${option.id}`;
+  return (
+    <div class="note field target">
+      <label for={id}>
+        {t.builder.targetLabel}
+        {!filled && <span class="tag req">{t.builder.required}</span>}
+      </label>
+      <textarea
+        id={id}
+        rows={2}
+        maxLength={300}
+        placeholder={filled ? t.builder.targetOptional : (option.meta?.targetHint ?? '')}
+        value={text}
+        onInput={(e) => onSetKey(key, (e.currentTarget as HTMLTextAreaElement).value || undefined)}
+      />
+      <span class="small muted">{fromDetail && !filled ? 'Elegí una idea arriba o escribilo. ' : ''}{t.builder.targetHelp}</span>
     </div>
   );
 }
@@ -114,7 +138,7 @@ function Refine({
     setTimeout(() => inputRef.current?.focus(), 0);
   };
   return (
-    <div ref={box} class={`refine${details.length ? '' : ' compact'}`}>
+    <div ref={box} class={`refine${details.length || option.meta?.needsTarget ? '' : ' compact'}`}>
       <p class="refine-title">
         <span class="refine-check" aria-hidden="true">✓</span> <strong>{option.label.es}</strong>
         {details.length > 0 && <span class="muted"> · {t.builder.refine}</span>}
@@ -127,6 +151,7 @@ function Refine({
       {details.map((d) => (
         <DetailRow key={d.id} step={step} option={option} detail={d} selections={selections} onSetKey={onSetKey} />
       ))}
+      {option.meta?.needsTarget && <TargetField step={step} option={option} selections={selections} onSetKey={onSetKey} />}
       {noteOpen && (
         <div class="note field">
           <label for={`nota-${step.id}-${option.id}`}>{t.builder.noteLabel(option.label.es)}</label>
@@ -359,7 +384,7 @@ function ColorStep({ step, value, onChange, selections, onSetKey }: GridProps) {
   );
 }
 
-export function StepView({ step, index, value, placeholder, optional, selections, onChange, onSetKey }: Props) {
+export function StepView({ step, index, value, selections, onChange, onSetKey }: Props) {
   const hasValue =
     value !== undefined && (typeof value === 'string' ? value.trim() !== '' : Array.isArray(value) ? value.length > 0 : Object.values(value).some((v) => v?.trim()));
   const fields = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -367,16 +392,24 @@ export function StepView({ step, index, value, placeholder, optional, selections
   return (
     <section class="step" id={`paso-${step.id}`} aria-labelledby={`t-${step.id}`}>
       <header class="step-head">
-        <span class={`num${hasValue || optional ? ' done' : ''}`} aria-hidden="true">
-          {hasValue || optional ? '✓' : index + 1}
+        <span class={`num${hasValue ? ' done' : ''}`} aria-hidden="true">
+          {hasValue ? '✓' : index + 1}
         </span>
         <div>
           <h2 id={`t-${step.id}`}>
             {step.title.es}
-            <span class={`tag${step.required && !optional ? ' req' : ''}`}>{step.required && !optional ? t.builder.required : t.builder.optional}</span>
+            <span class={`tag${step.required ? ' req' : ''}`}>{step.required ? t.builder.required : t.builder.optional}</span>
             {step.type === 'multi' && step.max && <span class="tag">{t.builder.upTo(step.max)}</span>}
+            {(step.type === 'single' || step.type === 'color') && step.options && (
+              <span class="tag" title={step.one?.es}>
+                {t.builder.pickOne}
+              </span>
+            )}
           </h2>
-          <p class="why">{step.why.es}</p>
+          <p class="why">
+            {step.why.es}
+            {step.one && <span class="one"> {step.one.es}</span>}
+          </p>
         </div>
         {hasValue && (
           <button type="button" class="btn btn-sm btn-ghost clear" onClick={() => onChange(undefined)}>
@@ -394,7 +427,7 @@ export function StepView({ step, index, value, placeholder, optional, selections
           <textarea
             rows={2}
             maxLength={300}
-            placeholder={optional ? t.builder.targetOptional : (placeholder ?? step.placeholder?.es)}
+            placeholder={step.placeholder?.es}
             value={typeof value === 'string' ? value : ''}
             onInput={(e) => onChange((e.currentTarget as HTMLTextAreaElement).value || undefined)}
             aria-labelledby={`t-${step.id}`}

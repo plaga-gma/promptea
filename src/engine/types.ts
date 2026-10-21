@@ -141,7 +141,7 @@ export interface Option {
 export interface Detail {
   id: string;
   label: LocalizedText;
-  /** 'single' por defecto. */
+  /** 'multi' por defecto: 'single' cuando elegir dos sería contradictorio (suave o fuerte, 2x o 4x). */
   type?: 'single' | 'multi';
   max?: number;
   options: Option[];
@@ -172,9 +172,9 @@ export interface OptionMeta {
   purpose?: string;
   /** Edición: la operación necesita una segunda imagen (montaje, referencia de estilo). */
   needsSecondImage?: boolean;
-  /** Paso de texto libre: el usuario debe escribir qué cambiar o qué agregar. */
+  /** Edición: la opción pide que el usuario diga qué cambiar o qué agregar (se escribe en su recuadro). */
   needsTarget?: boolean;
-  /** Ejemplo que se muestra en el paso de texto libre cuando se elige esta opción. */
+  /** Ejemplo para ese texto. */
   targetHint?: string;
   /** Términos que esta opción saca de la lista de "evitar" (por ejemplo, un mockup pedido a propósito). */
   allow?: string[];
@@ -226,6 +226,10 @@ export interface Step {
   showIfMeta?: keyof OptionMeta;
   /** Subopciones que se abren para cualquier opción elegida del paso (se suman a las de cada opción). */
   details?: Detail[];
+  /** 'single': por qué se elige una sola (se muestra en la interfaz). */
+  one?: LocalizedText;
+  /** Cómo se unen varias opciones: en una lista ("a, b y c", por defecto) o en oraciones separadas. */
+  join?: 'list' | 'sentences';
 }
 
 /** Tipo de prompt que produce un área. */

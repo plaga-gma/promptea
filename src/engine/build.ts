@@ -34,6 +34,18 @@ function joinParts(parts: PromptText[]): PromptText {
   };
 }
 
+function asSentence(s: string): string {
+  const t = s.trim();
+  if (!t) return t;
+  const c = t[0]!.toLocaleUpperCase() + t.slice(1);
+  return /[.!?]$/.test(c) ? c : `${c}.`;
+}
+
+function joinSentences(parts: PromptText[]): PromptText {
+  if (parts.length === 1) return parts[0]!;
+  return { en: parts.map((p) => asSentence(p.en)).join(' '), es: parts.map((p) => asSentence(p.es)).join(' ') };
+}
+
 function applyTemplate(template: PromptText | undefined, value: PromptText): PromptText {
   if (!template) return value;
   return {
@@ -52,6 +64,11 @@ function fillTarget(text: PromptText, target: PromptText | undefined): PromptTex
 /** Clave de una subopción dentro de `Selections`: `paso/opción/detalle`. */
 export function detailKey(stepId: string, optionId: string, detailId: string): string {
   return `${stepId}/${optionId}/${detailId}`;
+}
+
+/** Clave del texto "contalo con tus palabras" de una operación que lo necesita (meta.needsTarget). */
+export function targetKey(stepId: string, optionId: string): string {
+  return `${stepId}/${optionId}/target`;
 }
 
 /** Clave de la nota libre de una opción dentro de `Selections`. */
@@ -97,6 +114,18 @@ function mergeTarget(fromDetail: PromptText | undefined, text: string | undefine
   const t = text?.trim();
   if (!fromDetail) return t ? { en: t, es: t } : undefined;
   return t ? { en: `${fromDetail.en}, ${t}`, es: `${fromDetail.es}, ${t}` } : fromDetail;
+}
+
+/**
+ * El objetivo de una operación: lo que escribió el usuario en su recuadro (o, en prompts guardados
+ * antes de que cada operación tuviera el suyo, el viejo paso "target"), más la subopción que lo completa.
+ */
+export function targetOf(step: Step, option: Option, selections: Selections): PromptText | undefined {
+  if (!option.meta?.needsTarget) return undefined;
+  const own = selections[targetKey(step.id, option.id)];
+  const legacy = selections.target;
+  const text = typeof own === 'string' && own.trim() ? own : typeof legacy === 'string' ? legacy : undefined;
+  return mergeTarget(targetFromDetails(step, option, selections), text);
 }
 
 /**
@@ -186,16 +215,6 @@ export function buildSpec(area: Area, selections: Selections, options: BuildOpti
   };
   const allowed = spec.allowed;
 
-  // En edición, el texto "qué cambiar" se inyecta en la operación elegida.
-  const targetStep = area.steps.find((s) => s.id === 'target');
-  const targetValue = targetStep ? selections[targetStep.id] : undefined;
-  const targetText = typeof targetValue === 'string' ? targetValue : undefined;
-  // Una subopción puede completar el objetivo (por ejemplo, "Tipo de cielo"): se busca en las opciones elegidas.
-  const fromDetail = area.steps
-    .filter((s) => isStepVisible(s, options.advanced, area, selections))
-    .flatMap((s) => selectedOptions(s, selections).map((o) => targetFromDetails(s, o, selections)))
-    .find(Boolean);
-  const target = mergeTarget(fromDetail, targetText);
 
   const separate: Segment[] = [];
   for (const step of area.steps) {
@@ -206,7 +225,6 @@ export function buildSpec(area: Area, selections: Selections, options: BuildOpti
     let parts: PromptText[] = [];
 
     if (step.type === 'text') {
-      if (step.id === 'target') continue; // ya usado dentro de la operación
       const text = typeof value === 'string' ? value.trim() : '';
       if (text) parts = [{ en: text, es: text }];
     } else if (step.type === 'copy') {
@@ -225,13 +243,13 @@ export function buildSpec(area: Area, selections: Selections, options: BuildOpti
       spec.colors = colors;
       const chosen = selectedOptions(step, selections);
       const sub: Option[] = [];
-      if (chosen.length) parts = chosen.map((o) => refineOption(step, o, selections, target, sub, split));
+      if (chosen.length) parts = chosen.map((o) => refineOption(step, o, selections, targetOf(step, o, selections), sub, split));
       else if (record?.harmony_en && record.harmony_es) parts = [{ en: record.harmony_en, es: record.harmony_es }];
       for (const o of [...chosen, ...sub]) collectMeta(o, spec, allowed);
     } else {
       const chosen = selectedOptions(step, selections);
       const sub: Option[] = [];
-      parts = chosen.map((o) => refineOption(step, o, selections, target, sub, split));
+      parts = chosen.map((o) => refineOption(step, o, selections, targetOf(step, o, selections), sub, split));
       for (const o of [...chosen, ...sub]) collectMeta(o, spec, allowed);
     }
     for (const o of selectedOptions(step, selections)) {
@@ -244,7 +262,8 @@ export function buildSpec(area: Area, selections: Selections, options: BuildOpti
       role: step.role,
       stepId: step.id,
       parts,
-      text: applyTemplate(step.template, joinParts(parts)),
+      // Varias operaciones de edición son varias instrucciones: una oración cada una.
+      text: applyTemplate(step.template, step.join === 'sentences' ? joinSentences(parts) : joinParts(parts)),
     };
     spec.segments.push(segment);
   }
@@ -271,19 +290,16 @@ function collectMeta(option: Option, spec: PromptSpec, allowed: string[]) {
   if (meta.needsSecondImage) spec.needsSecondImage = true;
 }
 
-/** El texto libre de "qué cambiar" es opcional si una subopción ya lo completa. */
-export function targetFilled(area: Area, selections: Selections, advanced: boolean): boolean {
-  return area.steps
-    .filter((s) => isStepVisible(s, advanced, area, selections))
-    .some((s) => selectedOptions(s, selections).some((o) => targetFromDetails(s, o, selections)));
-}
-
 /** Pasos obligatorios a la vista que todavía no tienen nada elegido. */
 export function missingSteps(area: Area, selections: Selections, advanced: boolean): Step[] {
-  const filled = targetFilled(area, selections, advanced);
-  return area.steps.filter(
-    (s) => s.required && isStepVisible(s, advanced, area, selections) && !hasValue(selections[s.id]) && !(s.id === 'target' && filled),
-  );
+  return area.steps.filter((s) => s.required && isStepVisible(s, advanced, area, selections) && !hasValue(selections[s.id]));
+}
+
+/** Operaciones elegidas que necesitan que el usuario diga qué cambiar y todavía no lo dice. */
+export function missingTargets(area: Area, selections: Selections, advanced: boolean): Option[] {
+  return area.steps
+    .filter((s) => isStepVisible(s, advanced, area, selections))
+    .flatMap((s) => selectedOptions(s, selections).filter((o) => o.meta?.needsTarget && !targetOf(s, o, selections)));
 }
 
 export function hasValue(v: SelectionValue | undefined): boolean {
