@@ -1,5 +1,5 @@
 import type { Lang, ModelAdapter, PromptSpec, SegmentRole } from '../types';
-import { roleParts } from './shared';
+import { roleParts, spanishNotesTip } from './shared';
 
 const BASE_NEGATIVE = ['blurry', 'low quality', 'deformed', 'bad anatomy', 'extra fingers', 'watermark', 'signature'];
 
@@ -51,6 +51,7 @@ export const stableDiffusion: ModelAdapter = {
     if (spec.copy.length) notes.push({ es: 'Stable Diffusion escribe mal los textos: conviene agregarlos después en un editor.' });
     if (spec.ratio) notes.push({ es: `Configurá el tamaño en la app con proporción ${spec.ratio[0]}:${spec.ratio[1]} (por ejemplo 832×1216 para vertical).` });
     if (spec.mode === 'edit') notes.push({ es: 'Para editar usá img2img o inpainting con tu imagen cargada.' });
+    notes.push(...spanishNotesTip(spec, 'Stable Diffusion'));
     return { prompt: [...new Set(out)].join(', '), negative: [...new Set(negative)].join(', '), notes };
   },
 };

@@ -130,6 +130,36 @@ export interface Option {
   conflicts?: string[];
   /** Datos extra para el motor (relación de aspecto, términos a evitar, etc.). */
   meta?: OptionMeta;
+  /** Subopciones que se abren al elegir esta opción, para afinar el prompt. */
+  details?: Detail[];
+}
+
+/**
+ * Subopción: un detalle que se abre debajo de una opción elegida (por ejemplo, "Tipo de cielo"
+ * al elegir "Cambiar el cielo"). Ver docs/04-decisiones.md (T15) y docs/05-arquitectura.md.
+ */
+export interface Detail {
+  id: string;
+  label: LocalizedText;
+  /** 'single' por defecto. */
+  type?: 'single' | 'multi';
+  max?: number;
+  options: Option[];
+  /**
+   * Cómo se suma a la opción: `{value}`. Si el prompt de la opción tiene `{d:<id>}`, el valor
+   * va en ese lugar (y `default` cuando no se eligió nada); si no, se agrega al final con una coma.
+   */
+  template?: PromptText;
+  default?: PromptText;
+  /** El valor completa el `{target}` de la operación: el texto libre pasa a ser opcional. */
+  fillsTarget?: boolean;
+  /**
+   * El valor va en su propio bloque del prompt en vez de pegarse a la opción. Sirve para el tipo de
+   * imagen o de pieza, que va pegado al sujeto ("una foto de…") y no admite agregados en el medio.
+   */
+  role?: SegmentRole;
+  /** Ids de opciones del paso a las que no aplica (solo para `Step.details`). */
+  except?: string[];
 }
 
 export interface OptionMeta {
@@ -194,6 +224,8 @@ export interface Step {
   showIf?: { step: string; in: string[] };
   /** Mostrar el paso solo si alguna opción elegida tiene esta marca en `meta`. */
   showIfMeta?: keyof OptionMeta;
+  /** Subopciones que se abren para cualquier opción elegida del paso (se suman a las de cada opción). */
+  details?: Detail[];
 }
 
 /** Tipo de prompt que produce un área. */
@@ -218,7 +250,10 @@ export interface Section {
   areas: Area[];
 }
 
-/** Elecciones del usuario: por paso, una lista de ids, un texto o un mapa de campos. */
+/**
+ * Elecciones del usuario: por paso, una lista de ids, un texto o un mapa de campos.
+ * Las subopciones y notas de cada opción van en claves propias: ver `detailKey` y `noteKey` en build.ts.
+ */
 export type SelectionValue = string[] | string | Record<string, string>;
 export type Selections = Record<string, SelectionValue>;
 
@@ -252,6 +287,8 @@ export interface PromptSpec {
   tile: boolean;
   /** Lo que alguna opción elegida pide no evitar (meta.allow), también en los negativos fijos de cada IA. */
   allowed: string[];
+  /** Notas que el usuario escribió en sus opciones, tal cual (ya están dentro de los segmentos). */
+  notes: string[];
 }
 
 export type Lang = 'en' | 'es';

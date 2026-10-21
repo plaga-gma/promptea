@@ -1,5 +1,5 @@
 import type { ModelAdapter } from '../types';
-import { bodySentences, leadSentence } from './shared';
+import { bodySentences, leadSentence, spanishNotesTip } from './shared';
 
 const STYLIZE = [50, 100, 400] as const;
 
@@ -31,6 +31,7 @@ export const midjourney: ModelAdapter = {
     if (spec.mode === 'edit') {
       notes.push({ es: 'Midjourney no edita con solo texto: abrí tu imagen en su Editor y usá este prompt ahí.' });
     }
+    notes.push(...spanishNotesTip(spec, 'Midjourney'));
     return { prompt: [text, ...params].join(' '), notes };
   },
 };

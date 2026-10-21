@@ -1,4 +1,4 @@
-import type { Demo, Option } from '../../../engine/types';
+import type { Demo, Option, Step } from '../../../engine/types';
 import { o } from './_helpers';
 
 const g = (colors: string[], glyph: string): Demo => ({ kind: 'gradient', colors, glyph });
@@ -85,4 +85,32 @@ export const MATERIALES: Option[] = [
   o('hielo', 'Hielo', 'translucent ice', 'hielo translúcido', { demo: g(['#e0f7ff', '#7fc8f8'], '🧊') }),
   o('concreto', 'Concreto', 'raw concrete', 'concreto crudo', { demo: g(['#b0b0b0', '#6b6b6b'], '🧱') }),
   o('neon-material', 'Tubos de neón', 'glowing neon tubes', 'tubos de neón encendidos', { demo: g(['#1a0033', '#ff2bd6'], '💡') }),
+];
+
+/** Categorías de época, clima, expresión, cámara y material. */
+export const EPOCAS_GROUPS: Step['groups'] = [
+  { id: 'historia', label: { es: 'Historia' }, optionIds: ['prehistoria', 'antiguedad', 'medieval', 'victoriana'] },
+  { id: 'siglo20', label: { es: 'Siglo XX' }, optionIds: ['anos20', 'anos50', 'anos70', 'anos80', 'anos90'] },
+  { id: 'hoy', label: { es: 'Hoy y mañana' }, optionIds: ['y2k-epoca', 'actual', 'futuro'] },
+];
+
+export const CLIMAS_GROUPS: Step['groups'] = [
+  { id: 'clima', label: { es: 'Clima' }, optionIds: ['despejado', 'nublado-clima', 'lluvia', 'post-lluvia', 'nieve', 'niebla', 'tormenta', 'viento'] },
+  { id: 'estaciones', label: { es: 'Estaciones' }, optionIds: ['primavera', 'verano', 'otono', 'invierno'] },
+];
+
+export const EXPRESIONES_GROUPS: Step['groups'] = [
+  { id: 'gesto', label: { es: 'Gesto' }, optionIds: ['sonrisa', 'risa', 'serio', 'pensativo', 'sorpresa', 'melancolia', 'decidido'] },
+  { id: 'mirada', label: { es: 'Mirada y pose' }, optionIds: ['mirada-camara', 'mirada-lejos', 'ojos-cerrados', 'espontaneo', 'pose-moda'] },
+];
+
+export const CAMARAS_GROUPS: Step['groups'] = [
+  { id: 'camaras', label: { es: 'Cámaras' }, optionIds: ['celular', 'mirrorless', 'medio-formato', 'cine-camara', 'camara-seguridad'] },
+  { id: 'rollos', label: { es: 'Rollos de película' }, optionIds: ['portra', 'velvia', 'cinestill', 'hp5'] },
+  { id: 'epoca', label: { es: 'Fotos de otra época' }, optionIds: ['instantanea', 'descartable', 'daguerrotipo'] },
+];
+
+export const MATERIALES_GROUPS: Step['groups'] = [
+  { id: 'brillantes', label: { es: 'Brillantes' }, optionIds: ['vidrio', 'cromo', 'oro', 'plastico', 'hielo', 'neon-material'] },
+  { id: 'naturales', label: { es: 'Naturales y sólidos' }, optionIds: ['marmol', 'madera', 'ceramica', 'terciopelo', 'papel-material', 'concreto'] },
 ];

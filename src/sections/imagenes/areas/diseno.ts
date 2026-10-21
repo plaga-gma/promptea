@@ -1,6 +1,30 @@
 import type { Area } from '../../../engine/types';
-import { ATMOSFERAS, EVITAR, FORMATOS, PALETAS, TEXTURAS } from '../library/color';
-import { ELEMENTOS, ESTILOS_DISENO, FONDOS, LAYOUTS, PERSONALIDADES, PIEZAS, PRESENTACIONES, TIPOGRAFIAS, TIPOS_LOGO } from '../library/diseno';
+import { ATMOSFERAS, ATMOSFERAS_GROUPS, EVITAR, FORMATOS, PALETAS, PALETAS_GROUPS, TEXTURAS, TEXTURAS_GROUPS } from '../library/color';
+import {
+  DETALLE_FUERZA_ESTILO,
+  DETALLES_ATMOSFERA,
+  DETALLES_ELEMENTOS,
+  DETALLES_ESTILOS,
+  DETALLES_FONDOS,
+  DETALLES_PALETA,
+  DETALLES_PIEZAS,
+  DETALLES_TEXTURA,
+  DETALLES_TIPOGRAFIA,
+  DETALLES_TIPOS_LOGO,
+  withDetails,
+} from '../library/detalles';
+import {
+  ELEMENTOS,
+  ESTILOS_DISENO,
+  ESTILOS_DISENO_GROUPS,
+  FONDOS,
+  LAYOUTS,
+  PERSONALIDADES,
+  PIEZAS,
+  PRESENTACIONES,
+  TIPOGRAFIAS,
+  TIPOS_LOGO,
+} from '../library/diseno';
 import { ESTILOS, ESTILOS_GROUPS } from '../library/estilos';
 
 /** Piezas con varios elementos que ordenar (en un logo, un ícono o un patrón no hace falta elegir diagramación). */
@@ -27,7 +51,7 @@ export const diseno: Area = {
       role: 'medium',
       type: 'single',
       required: true,
-      options: PIEZAS,
+      options: withDetails(PIEZAS, DETALLES_PIEZAS),
       groups: [
         { id: 'marca', label: { es: 'Marca' }, optionIds: ['logo', 'icono', 'tarjeta', 'sticker', 'etiqueta'] },
         { id: 'redes', label: { es: 'Redes y video' }, optionIds: ['post', 'historia', 'miniatura', 'podcast', 'fondo-pantalla'] },
@@ -51,7 +75,7 @@ export const diseno: Area = {
       why: { es: 'Hay 7 familias de logos. Elegir una evita que la IA mezcle todo.' },
       role: 'layout',
       type: 'single',
-      options: TIPOS_LOGO,
+      options: withDetails(TIPOS_LOGO, DETALLES_TIPOS_LOGO),
       showIf: { step: 'pieza', in: ['logo'] },
     },
     {
@@ -62,6 +86,7 @@ export const diseno: Area = {
       type: 'multi',
       max: 2,
       options: ESTILOS_DISENO,
+      groups: ESTILOS_DISENO_GROUPS,
     },
     {
       id: 'personalidad',
@@ -93,6 +118,7 @@ export const diseno: Area = {
       type: 'multi',
       max: 2,
       options: TIPOGRAFIAS,
+      details: DETALLES_TIPOGRAFIA,
       groups: [
         { id: 'serif', label: { es: 'Con serifa' }, optionIds: ['serif-clasica', 'didona', 'slab'] },
         { id: 'sans', label: { es: 'Sin serifa' }, optionIds: ['geometrica', 'grotesca', 'humanista', 'redondeada', 'condensada', 'extra-negrita', 'mono'] },
@@ -107,6 +133,8 @@ export const diseno: Area = {
       role: 'color',
       type: 'color',
       options: PALETAS,
+      groups: PALETAS_GROUPS,
+      details: DETALLES_PALETA,
     },
     {
       id: 'diagramacion',
@@ -124,7 +152,7 @@ export const diseno: Area = {
       role: 'composition',
       type: 'multi',
       max: 3,
-      options: ELEMENTOS,
+      options: withDetails(ELEMENTOS, DETALLES_ELEMENTOS),
       template: { en: 'featuring {value}', es: 'con {value}' },
     },
     {
@@ -134,8 +162,9 @@ export const diseno: Area = {
       role: 'style',
       type: 'single',
       level: 'advanced',
-      options: ESTILOS,
+      options: withDetails(ESTILOS, DETALLES_ESTILOS),
       groups: ESTILOS_GROUPS,
+      details: [DETALLE_FUERZA_ESTILO],
       template: { en: 'imagery in {value}', es: 'imágenes en {value}' },
     },
     {
@@ -144,7 +173,7 @@ export const diseno: Area = {
       why: { es: 'Para logos e íconos conviene un fondo liso: es más fácil recortarlos y vectorizarlos.' },
       role: 'background',
       type: 'single',
-      options: FONDOS,
+      options: withDetails(FONDOS, DETALLES_FONDOS),
     },
     {
       id: 'presentacion',
@@ -163,6 +192,8 @@ export const diseno: Area = {
       type: 'single',
       level: 'advanced',
       options: ATMOSFERAS,
+      groups: ATMOSFERAS_GROUPS,
+      details: DETALLES_ATMOSFERA,
     },
     {
       id: 'textura',
@@ -173,6 +204,8 @@ export const diseno: Area = {
       max: 2,
       level: 'advanced',
       options: TEXTURAS,
+      groups: TEXTURAS_GROUPS,
+      details: DETALLES_TEXTURA,
     },
     {
       id: 'evitar',

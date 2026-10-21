@@ -18,13 +18,14 @@ interface Props {
   onCopy: (text: string, isMain: boolean) => Promise<boolean>;
   onOpen: () => void;
   onFavorite: () => void;
+  canReset: boolean;
   onReset: () => void;
 }
 
 export function PromptPanel(p: Props) {
   const [copied, setCopied] = useState<'main' | 'neg' | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const words = p.result.prompt.trim() ? p.result.prompt.trim().split(/\s+/).length : 0;
+  const words = p.hasContent && p.result.prompt.trim() ? p.result.prompt.trim().split(/\s+/).length : 0;
 
   const copy = async (which: 'main' | 'neg') => {
     const ok = await p.onCopy(which === 'main' ? p.result.prompt : (p.result.negative ?? ''), which === 'main');
@@ -41,14 +42,22 @@ export function PromptPanel(p: Props) {
           {sheetOpen ? t.panel.hide : t.panel.show}
           {words > 0 && <span class="muted"> · {t.panel.words(words)}</span>}
         </button>
-        <button type="button" class="btn btn-primary btn-sm" disabled={!p.hasContent} onClick={() => copy('main')}>
-          {copied === 'main' ? t.panel.copied : t.panel.copy}
-        </button>
+        <div class="sheet-actions">
+          <button type="button" class="btn btn-sm btn-ghost" disabled={!p.canReset} onClick={p.onReset} title={t.builder.resetTitle} aria-label={t.builder.resetTitle}>
+            ↺
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" disabled={!p.hasContent} onClick={() => copy('main')}>
+            {copied === 'main' ? t.panel.copied : t.panel.copy}
+          </button>
+        </div>
       </div>
 
       <div class="panel-body">
         <div class="panel-head">
           <h2>{t.panel.title}</h2>
+          <button type="button" class="btn btn-sm reset" disabled={!p.canReset} onClick={p.onReset} title={t.builder.resetTitle}>
+            ↺ {t.builder.reset}
+          </button>
           <button
             type="button"
             class="btn btn-sm btn-ghost star"
@@ -143,10 +152,6 @@ export function PromptPanel(p: Props) {
             </ul>
           </div>
         )}
-
-        <button type="button" class="btn btn-sm btn-ghost reset" onClick={p.onReset}>
-          {t.builder.reset}
-        </button>
       </div>
     </aside>
   );

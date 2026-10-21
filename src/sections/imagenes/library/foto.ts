@@ -1,4 +1,4 @@
-import type { Demo, Option } from '../../../engine/types';
+import type { Demo, Option, Step } from '../../../engine/types';
 import { BLUR, o } from './_helpers';
 
 const light = (bg: string, sphere: string, glow?: string): Demo => ({ kind: 'light', bg, sphere, ...(glow ? { glow } : {}) });
@@ -162,4 +162,28 @@ export const COMPOSICION: Option[] = [
   o('capas', 'Capas de profundidad', 'layered depth with foreground, midground and background', 'profundidad en capas con primer plano, plano medio y fondo', { hint: 'Algo adelante, el sujeto al medio y un fondo: sensación 3D.', demo: diagram('comp-layers') }),
   o('punto-fuga', 'Punto de fuga', 'one-point perspective with lines converging to a central vanishing point', 'perspectiva central con líneas que convergen en un punto de fuga', { hint: 'Pasillos, rutas o vías que se juntan en el centro.', demo: diagram('comp-vanishing') }),
   o('knolling', 'Knolling (objetos ordenados)', 'knolling: objects neatly arranged at right angles, seen from above', 'knolling: objetos ordenados en ángulo recto, vistos desde arriba', { hint: 'Herramientas o productos alineados prolijamente.', demo: diagram('comp-knolling') }),
+];
+
+/** Categorías de las listas largas de luz y cámara. */
+export const ILUMINACION_GROUPS: Step['groups'] = [
+  { id: 'natural', label: { es: 'Natural' }, optionIds: ['hora-dorada', 'hora-azul', 'nublado', 'luna', 'mediodia', 'ventana', 'persiana'] },
+  { id: 'estudio', label: { es: 'Estudio y retrato' }, optionIds: ['estudio', 'clave-alta', 'clave-baja', 'rembrandt', 'split', 'mariposa', 'aro', 'flash'] },
+  { id: 'dramatica', label: { es: 'Dramática' }, optionIds: ['claroscuro', 'contraluz', 'volumetrica', 'escenario'] },
+  { id: 'fuentes', label: { es: 'Fuego, neón y pantallas' }, optionIds: ['neon', 'velas', 'fogata', 'bioluminiscente', 'pantalla'] },
+];
+
+export const ANGULOS_GROUPS: Step['groups'] = [
+  { id: 'altura', label: { es: 'Altura de la cámara' }, optionIds: ['altura-ojos', 'contrapicado', 'picado', 'cenital', 'aerea', 'gusano'] },
+  { id: 'punto', label: { es: 'Punto de vista' }, optionIds: ['holandes', 'sobre-hombro', 'perfil', 'tres-cuartos', 'pov', 'selfie'] },
+];
+
+export const LENTES_GROUPS: Step['groups'] = [
+  { id: 'lentes', label: { es: 'Lentes' }, optionIds: ['gran-angular', 'normal', 'retrato', 'teleobjetivo', 'macro', 'ojo-pez', 'anamorfico'] },
+  { id: 'foco', label: { es: 'Foco' }, optionIds: ['tilt-shift', 'foco-profundo', 'gran-apertura'] },
+];
+
+export const COMPOSICION_GROUPS: Step['groups'] = [
+  { id: 'reglas', label: { es: 'Reglas clásicas' }, optionIds: ['tercios', 'centrada', 'aurea', 'diagonal'] },
+  { id: 'mirada', label: { es: 'Guiar la mirada' }, optionIds: ['lineas-guia', 'marco', 'punto-fuga', 'capas'] },
+  { id: 'orden', label: { es: 'Orden y vacío' }, optionIds: ['espacio-negativo', 'patron', 'knolling'] },
 ];

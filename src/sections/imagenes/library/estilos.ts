@@ -3,7 +3,7 @@ import { img, o } from './_helpers';
 
 /** Tipo de imagen (medio). Primer bloque del prompt de generación. */
 export const MEDIOS: Option[] = [
-  o('foto', 'Fotografía', 'a photograph', 'una fotografía', {
+  o('foto', 'Fotografía', 'a {d:tipo} photograph', 'una fotografía {d:tipo}', {
     hint: 'Imagen realista, como sacada con una cámara.',
     demo: img('Fotografía de ejemplo', ['#5b6b7a', '#d9c7a7']),
     meta: { literal: true },

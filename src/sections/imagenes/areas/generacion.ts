@@ -1,9 +1,33 @@
 import type { Area } from '../../../engine/types';
-import { ATMOSFERAS, EVITAR, FORMATOS, PALETAS, TEXTURAS } from '../library/color';
+import { ATMOSFERAS, ATMOSFERAS_GROUPS, EVITAR, FORMATOS, PALETAS, PALETAS_GROUPS, TEXTURAS, TEXTURAS_GROUPS } from '../library/color';
+import {
+  DETALLE_FUERZA_ESTILO,
+  DETALLES_ATMOSFERA,
+  DETALLES_CLIMA,
+  DETALLES_ESTILOS,
+  DETALLES_FILTROS,
+  DETALLES_LUZ,
+  DETALLES_MATERIAL,
+  DETALLES_MEDIOS,
+  DETALLES_PALETA,
+  DETALLES_TEXTURA,
+  withDetails,
+} from '../library/detalles';
 import { ESTILOS, ESTILOS_GROUPS, MEDIOS } from '../library/estilos';
 import { FILTROS, FILTROS_GROUPS } from '../library/edicion';
-import { CAMARAS, CLIMAS, EPOCAS, EXPRESIONES, MATERIALES } from '../library/escena';
-import { ANGULOS, COMPOSICION, ILUMINACION, LENTES, PLANOS } from '../library/foto';
+import {
+  CAMARAS,
+  CAMARAS_GROUPS,
+  CLIMAS,
+  CLIMAS_GROUPS,
+  EPOCAS,
+  EPOCAS_GROUPS,
+  EXPRESIONES,
+  EXPRESIONES_GROUPS,
+  MATERIALES,
+  MATERIALES_GROUPS,
+} from '../library/escena';
+import { ANGULOS, ANGULOS_GROUPS, COMPOSICION, COMPOSICION_GROUPS, ILUMINACION, ILUMINACION_GROUPS, LENTES, LENTES_GROUPS, PLANOS } from '../library/foto';
 
 export const generacion: Area = {
   id: 'generacion',
@@ -26,7 +50,7 @@ export const generacion: Area = {
       role: 'medium',
       type: 'single',
       required: true,
-      options: MEDIOS,
+      options: withDetails(MEDIOS, DETALLES_MEDIOS),
     },
     {
       id: 'sujeto',
@@ -54,6 +78,7 @@ export const generacion: Area = {
       max: 2,
       level: 'advanced',
       options: EXPRESIONES,
+      groups: EXPRESIONES_GROUPS,
     },
     {
       id: 'entorno',
@@ -71,6 +96,7 @@ export const generacion: Area = {
       type: 'single',
       level: 'advanced',
       options: EPOCAS,
+      groups: EPOCAS_GROUPS,
       template: { en: 'set in {value}', es: 'ambientado en {value}' },
     },
     {
@@ -80,7 +106,8 @@ export const generacion: Area = {
       role: 'setting',
       type: 'single',
       level: 'advanced',
-      options: CLIMAS,
+      options: withDetails(CLIMAS, DETALLES_CLIMA),
+      groups: CLIMAS_GROUPS,
     },
     {
       id: 'estilo',
@@ -89,8 +116,9 @@ export const generacion: Area = {
       role: 'style',
       type: 'multi',
       max: 2,
-      options: ESTILOS,
+      options: withDetails(ESTILOS, DETALLES_ESTILOS),
       groups: ESTILOS_GROUPS,
+      details: [DETALLE_FUERZA_ESTILO],
     },
     {
       id: 'iluminacion',
@@ -99,6 +127,8 @@ export const generacion: Area = {
       role: 'lighting',
       type: 'single',
       options: ILUMINACION,
+      groups: ILUMINACION_GROUPS,
+      details: DETALLES_LUZ,
     },
     {
       id: 'color',
@@ -107,6 +137,8 @@ export const generacion: Area = {
       role: 'color',
       type: 'color',
       options: PALETAS,
+      groups: PALETAS_GROUPS,
+      details: DETALLES_PALETA,
     },
     {
       id: 'atmosfera',
@@ -115,6 +147,8 @@ export const generacion: Area = {
       role: 'mood',
       type: 'single',
       options: ATMOSFERAS,
+      groups: ATMOSFERAS_GROUPS,
+      details: DETALLES_ATMOSFERA,
     },
     {
       id: 'composicion',
@@ -123,6 +157,7 @@ export const generacion: Area = {
       role: 'composition',
       type: 'single',
       options: COMPOSICION,
+      groups: COMPOSICION_GROUPS,
     },
     {
       id: 'plano',
@@ -140,6 +175,7 @@ export const generacion: Area = {
       type: 'single',
       level: 'advanced',
       options: ANGULOS,
+      groups: ANGULOS_GROUPS,
     },
     {
       id: 'lente',
@@ -149,6 +185,7 @@ export const generacion: Area = {
       type: 'single',
       level: 'advanced',
       options: LENTES,
+      groups: LENTES_GROUPS,
     },
     {
       id: 'camara',
@@ -158,6 +195,7 @@ export const generacion: Area = {
       type: 'single',
       level: 'advanced',
       options: CAMARAS,
+      groups: CAMARAS_GROUPS,
       showIf: { step: 'medio', in: ['foto'] },
       template: { en: 'shot on {value}', es: 'tomada con {value}' },
     },
@@ -170,6 +208,8 @@ export const generacion: Area = {
       max: 2,
       level: 'advanced',
       options: TEXTURAS,
+      groups: TEXTURAS_GROUPS,
+      details: DETALLES_TEXTURA,
     },
     {
       id: 'material',
@@ -180,6 +220,8 @@ export const generacion: Area = {
       max: 2,
       level: 'advanced',
       options: MATERIALES,
+      groups: MATERIALES_GROUPS,
+      details: DETALLES_MATERIAL,
       template: { en: 'made of {value}', es: 'hecho de {value}' },
     },
     {
@@ -189,7 +231,7 @@ export const generacion: Area = {
       role: 'style',
       type: 'single',
       level: 'advanced',
-      options: FILTROS,
+      options: withDetails(FILTROS, DETALLES_FILTROS),
       groups: FILTROS_GROUPS,
     },
     {

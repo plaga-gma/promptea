@@ -1,4 +1,4 @@
-import type { Demo, Option } from '../../../engine/types';
+import type { Demo, Option, Step } from '../../../engine/types';
 import { img, o } from './_helpers';
 
 const font = (family: string, extra: Partial<Extract<Demo, { kind: 'font' }>> = {}): Demo => ({ kind: 'font', family, ...extra });
@@ -166,4 +166,13 @@ export const PRESENTACIONES: Option[] = [
   o('m-remera', 'En una remera', 'presented as a realistic mockup printed on a t-shirt worn by a person', 'presentado como un mockup realista estampado en una remera que lleva puesta una persona', { demo: diagram('mock-shirt'), meta: { allow: MOCKUP } }),
   o('m-packaging', 'En un producto', 'presented as a realistic mockup printed on product packaging', 'presentado como un mockup realista impreso en el packaging de un producto', { demo: diagram('mock-package'), meta: { allow: MOCKUP } }),
   o('m-calle', 'En la calle', 'presented as a realistic mockup on a street billboard', 'presentado como un mockup realista en un cartel de la calle', { demo: diagram('mock-street'), meta: { allow: MOCKUP } }),
+];
+
+/** Categorías de los estilos de diseño. */
+export const ESTILOS_DISENO_GROUPS: Step['groups'] = [
+  { id: 'clasicos', label: { es: 'Clásicos del diseño' }, optionIds: ['d-suizo', 'd-bauhaus', 'd-constructivista', 'd-editorial', 'd-tipografico', 'd-psicodelico'] },
+  { id: 'limpios', label: { es: 'Minimal y limpios' }, optionIds: ['d-minimal', 'd-escandinavo', 'd-japones', 'd-corporativo', 'd-lujo'] },
+  { id: 'retro', label: { es: 'Retro' }, optionIds: ['d-retro', 'd-memphis', 'd-y2k', 'd-grunge'] },
+  { id: 'actuales', label: { es: 'Actuales' }, optionIds: ['d-brutalista', 'd-neobrutalista', 'd-glass', 'd-aurora', 'd-acid'] },
+  { id: 'calidos', label: { es: 'Cálidos y lúdicos' }, optionIds: ['d-organico', 'd-boho', 'd-kawaii', 'd-doodle', 'd-infantil', 'd-maximal'] },
 ];

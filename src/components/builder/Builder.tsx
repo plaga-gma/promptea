@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { getAdapter } from '../../engine/adapters';
-import { buildSpec, findConflicts, isStepVisible, selectedOptions } from '../../engine/build';
+import { buildSpec, findConflicts, hasValue, isStepVisible, missingSteps, pruneDetails, selectedOptions, targetFilled } from '../../engine/build';
 import type { Area, LocalizedText, SelectionValue, Selections } from '../../engine/types';
 import { t } from '../../i18n/es';
 import { addToHistory, findSaved, getPrefs, isFavorite, newId, setPrefs, toggleFavorite, type SavedPrompt } from '../../lib/storage';
@@ -16,12 +16,12 @@ interface Props {
   area: Area;
 }
 
-/** Cuánto se nota el filtro en la muestra según el paso "Intensidad" de Edición. */
-function hasValue(v: SelectionValue | undefined) {
-  if (v === undefined) return false;
-  if (typeof v === 'string') return v.trim() !== '';
-  if (Array.isArray(v)) return v.length > 0;
-  return Object.values(v).some((x) => x?.trim());
+/** Ids de opciones elegidas en un valor de paso (lista, id suelto o paleta). */
+function chosenIds(v: SelectionValue | undefined): string[] {
+  if (Array.isArray(v)) return v;
+  if (typeof v === 'string') return [v];
+  if (v && typeof v.palette === 'string') return [v.palette];
+  return [];
 }
 
 async function writeClipboard(text: string): Promise<boolean> {
@@ -50,6 +50,11 @@ export default function Builder({ sectionId, area }: Props) {
   const [creativity, setCreativity] = useState<0 | 1 | 2>(1);
   const [favorite, setFavorite] = useState(false);
   const [photo, setPhoto] = useState('retrato');
+  // Al reiniciar cambia la clave de los pasos: vuelven a su estado inicial (categoría, "ver todas", notas abiertas).
+  const [round, setRound] = useState(0);
+  const [undo, setUndo] = useState<Selections | null>(null);
+  const undoTimer = useRef<number>();
+  const top = useRef<HTMLDivElement>(null);
 
   // Preferencias y prompt guardado (?cargar=<id>) se leen al montar, para no romper la hidratación.
   useEffect(() => {
@@ -71,7 +76,9 @@ export default function Builder({ sectionId, area }: Props) {
   const spec = useMemo(() => buildSpec(area, selections, { advanced }), [area, selections, advanced]);
   const result = useMemo(() => adapter.format(spec, { lang, creativity }), [adapter, spec, lang, creativity]);
   const hasContent = spec.segments.length > 0 || spec.copy.length > 0;
-  const missing = visibleSteps.filter((s) => s.required && !hasValue(selections[s.id])).map((s) => s.title.es);
+  const missing = missingSteps(area, selections, advanced).map((s) => s.title.es);
+  const filled = targetFilled(area, selections, advanced);
+  const hasSelections = Object.values(selections).some((v) => hasValue(v));
   const warnings: LocalizedText[] = findConflicts(area, selections).map(([a, b]) => ({ es: t.panel.conflict(a.label.es, b.label.es) }));
   if (spec.mode === 'edit' && spec.needsSecondImage) {
     warnings.push({ es: 'Esta edición necesita dos imágenes: adjuntá primero tu foto base y después la imagen de referencia.' });
@@ -84,11 +91,38 @@ export default function Builder({ sectionId, area }: Props) {
 
   const update = (stepId: string, value: SelectionValue | undefined) =>
     setSelections((prev) => {
-      const next = { ...prev };
+      // Las subopciones y notas de una opción que se desmarca se van con ella.
+      const next = pruneDetails(prev, stepId, chosenIds(value));
       if (value === undefined) delete next[stepId];
       else next[stepId] = value;
       return next;
     });
+
+  const setKey = (key: string, value: SelectionValue | undefined) =>
+    setSelections((prev) => {
+      const next = { ...prev };
+      if (value === undefined) delete next[key];
+      else next[key] = value;
+      return next;
+    });
+
+  const reset = () => {
+    if (!hasSelections) return;
+    setUndo(selections);
+    setSelections({});
+    setRound((r) => r + 1);
+    // Un prompt abierto desde "Mis prompts" (?cargar=) no tiene que volver al recargar.
+    if (location.search.includes('cargar=')) history.replaceState(null, '', location.pathname);
+    top.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    clearTimeout(undoTimer.current);
+    undoTimer.current = window.setTimeout(() => setUndo(null), 8000);
+  };
+
+  const restore = () => {
+    if (undo) setSelections(undo);
+    setUndo(null);
+    clearTimeout(undoTimer.current);
+  };
 
   const entry = (): SavedPrompt => {
     const main = spec.segments.find((s) => s.role === 'subject' || s.role === 'operation');
@@ -149,7 +183,7 @@ export default function Builder({ sectionId, area }: Props) {
 
   return (
     <DemoContext.Provider value={demoSettings}>
-      <div class="builder">
+      <div class="builder" ref={top}>
         <FilterDefs />
         <div class="steps">
           <div class="mode card">
@@ -166,12 +200,15 @@ export default function Builder({ sectionId, area }: Props) {
           </div>
           {visibleSteps.map((step, i) => (
             <StepView
-              key={step.id}
+              key={`${step.id}-${round}`}
               step={step}
               index={i}
               value={selections[step.id]}
               placeholder={step.showIfMeta === 'needsTarget' ? targetHint : undefined}
+              optional={step.id === 'target' && filled}
+              selections={selections}
               onChange={(v) => update(step.id, v)}
+              onSetKey={setKey}
             />
           ))}
         </div>
@@ -190,8 +227,17 @@ export default function Builder({ sectionId, area }: Props) {
           onCopy={onCopy}
           onOpen={onOpen}
           onFavorite={() => setFavorite(toggleFavorite(entry()))}
-          onReset={() => setSelections({})}
+          canReset={hasSelections}
+          onReset={reset}
         />
+        {undo && (
+          <div class="toast" role="status">
+            <span>{t.builder.resetDone}</span>
+            <button type="button" class="btn btn-sm" onClick={restore}>
+              {t.builder.undo}
+            </button>
+          </div>
+        )}
       </div>
     </DemoContext.Provider>
   );

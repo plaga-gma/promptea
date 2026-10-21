@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ADAPTERS, getAdapter } from '../src/engine/adapters';
-import { buildSpec, findConflicts } from '../src/engine/build';
+import { buildSpec, detailKey, detailsOf, findConflicts, missingSteps, noteKey, pruneDetails } from '../src/engine/build';
 import { contrastRatio, harmonyPalette } from '../src/engine/color';
 import { SECTIONS, findArea } from '../src/sections';
 import { DIAGRAMS } from '../src/components/demos/diagrams';
@@ -247,5 +247,109 @@ describe('efectos de edición', () => {
   it('foto antigua y color selectivo', () => {
     expect(prompt({ operacion: 'envejecer', epoca: 'epoca-1990' })).toContain('Make it look like a 1990s disposable camera snapshot');
     expect(prompt({ operacion: 'color-selectivo', target: 'the red umbrella' })).toContain('black and white except the red umbrella');
+  });
+});
+
+describe('subopciones y notas', () => {
+  it('el catálogo de subopciones está completo y bien armado', () => {
+    for (const section of SECTIONS)
+      for (const area of section.areas)
+        for (const step of area.steps) {
+          const ids = (step.options ?? []).map((o) => o.id);
+          for (const d of step.details ?? []) for (const id of d.except ?? []) expect(ids, `${step.id}/${d.id} except`).toContain(id);
+          for (const o of step.options ?? []) {
+            const details = detailsOf(step, o);
+            const dids = details.map((d) => d.id);
+            expect(new Set(dids).size, `${step.id}/${o.id}: subopciones repetidas`).toBe(dids.length);
+            for (const [, id] of `${o.prompt.en} ${o.prompt.es}`.matchAll(/\{d:([\w-]+)\}/g))
+              expect(dids, `${o.id}: {d:${id}} sin subopción`).toContain(id);
+            for (const d of details) {
+              const oids = d.options.map((x) => x.id);
+              expect(new Set(oids).size, `${o.id}/${d.id}`).toBe(oids.length);
+              expect(d.options.length, `${o.id}/${d.id}`).toBeGreaterThan(1);
+              for (const x of d.options) expect(x.prompt.en.trim() && x.prompt.es.trim(), `${o.id}/${d.id}/${x.id}`).toBeTruthy();
+              if (d.fillsTarget) expect(o.meta?.needsTarget, `${o.id}/${d.id}: completa un objetivo que no existe`).toBe(true);
+            }
+          }
+        }
+  });
+
+  it('toda lista de más de 10 opciones está dividida en categorías', () => {
+    for (const section of SECTIONS)
+      for (const area of section.areas)
+        for (const step of area.steps)
+          if ((step.options?.length ?? 0) > 10) expect(step.groups, `${area.id}/${step.id}`).toBeTruthy();
+  });
+
+  it('suma las subopciones a la opción y la nota tal cual', () => {
+    const sel = {
+      ...genSel,
+      [detailKey('iluminacion', 'hora-dorada', 'direccion')]: ['ld-costado'],
+      [noteKey('iluminacion', 'hora-dorada')]: '  que entre por la ventana.  ',
+    };
+    const spec = buildSpec(gen, sel, { advanced: false });
+    const p = getAdapter('generico').format(spec, { lang: 'en', creativity: 1 }).prompt;
+    expect(p).toContain('Warm golden hour sunlight with long soft shadows, coming from the side, sculpting the shapes, que entre por la ventana.');
+    expect(spec.notes).toEqual(['que entre por la ventana']);
+    expect(getAdapter('midjourney').format(spec, { lang: 'en', creativity: 1 }).notes.some((n) => n.es.includes('inglés'))).toBe(true);
+    expect(getAdapter('chatgpt').format(spec, { lang: 'en', creativity: 1 }).notes.some((n) => n.es.includes('Tus notas'))).toBe(false);
+  });
+
+  it('una subopción reemplaza su lugar en el prompt, o usa el valor por defecto', () => {
+    const base = buildSpec(edit, { operacion: 'quitar-fondo' }, { advanced: false });
+    expect(base.segments[0]!.text.en).toContain('isolated on a plain white background');
+    const png = buildSpec(edit, { operacion: 'quitar-fondo', [detailKey('operacion', 'quitar-fondo', 'fondo')]: ['qf-transparente'] }, { advanced: false });
+    expect(png.segments[0]!.text.en).toContain('isolated on a transparent background (PNG with alpha channel)');
+    expect(png.segments[0]!.text.en).not.toContain('{d:');
+    const blur = buildSpec(edit, { operacion: 'desenfocar-fondo', [detailKey('operacion', 'desenfocar-fondo', 'cuanto')]: ['df-fuerte'] }, { advanced: false });
+    expect(blur.segments[0]!.text.en).toContain('like a fast lens at f/1.2');
+    expect(blur.segments[0]!.text.en).not.toContain('f/1.8');
+  });
+
+  it('una subopción puede completar el objetivo: el texto libre pasa a ser opcional', () => {
+    const sel = { operacion: 'cambiar-cielo', [detailKey('operacion', 'cambiar-cielo', 'cielo')]: ['cielo-tormenta'] };
+    expect(missingSteps(edit, sel, false).map((s) => s.id)).not.toContain('target');
+    expect(missingSteps(edit, { operacion: 'cambiar-cielo' }, false).map((s) => s.id)).toContain('target');
+    const p = getAdapter('generico').format(buildSpec(edit, sel, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
+    expect(p).toContain('Replace the sky with a dramatic, dark stormy sky with heavy clouds, adjusting');
+    const both = buildSpec(edit, { ...sel, target: 'with lightning' }, { advanced: false });
+    expect(both.segments[0]!.text.en).toContain('heavy clouds, with lightning, adjusting');
+  });
+
+  it('el tipo de imagen no se separa del sujeto', () => {
+    const sel = {
+      ...genSel,
+      medio: 'foto',
+      [detailKey('medio', 'foto', 'tipo')]: ['fm-retrato'],
+      [noteKey('medio', 'foto')]: 'para un fondo de presentación',
+    };
+    const p = getAdapter('generico').format(buildSpec(gen, sel, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
+    expect(p.startsWith('A portrait photograph of a red fox wearing a green wool scarf, reading a book, in a snowy forest at dawn, para un fondo de presentación.')).toBe(true);
+    const ill = { ...genSel, [detailKey('medio', 'ilustracion', 'acabado')]: ['im-lineal'] };
+    const q = getAdapter('generico').format(buildSpec(gen, ill, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
+    expect(q.startsWith('A digital illustration of a red fox')).toBe(true);
+    expect(q).toContain('textured paper; with clean ink lines and flat colors.');
+    const sinTipo = getAdapter('generico').format(buildSpec(gen, { ...genSel, medio: 'foto' }, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
+    expect(sinTipo.startsWith('A photograph of a red fox')).toBe(true);
+  });
+
+  it('las subopciones de una opción desmarcada se borran', () => {
+    const sel = {
+      estilo: ['acuarela'],
+      [detailKey('estilo', 'acuarela', 'manera')]: ['ac-suelta'],
+      [noteKey('estilo', 'acuarela')]: 'x',
+      [detailKey('estilo', 'anime', 'epoca')]: ['an-90'],
+      [noteKey('iluminacion', 'neon')]: 'y',
+    };
+    expect(Object.keys(pruneDetails(sel, 'estilo', ['acuarela'])).sort()).toEqual(
+      ['estilo', 'estilo/acuarela/manera', 'estilo/acuarela/nota', 'iluminacion/neon/nota'].sort(),
+    );
+    expect(Object.keys(pruneDetails(sel, 'estilo', []))).toEqual(['estilo', 'iluminacion/neon/nota']);
+  });
+
+  it('las subopciones de diseño van después del rubro', () => {
+    const sel = { pieza: 'post', tema: 'an artisan bakery', [detailKey('pieza', 'post', 'red')]: ['pr-linkedin'] };
+    const p = getAdapter('generico').format(buildSpec(design, sel, { advanced: false }), { lang: 'en', creativity: 1 }).prompt;
+    expect(p).toContain('A social media post design for an artisan bakery, for LinkedIn, with a professional tone.');
   });
 });

@@ -1,4 +1,4 @@
-import type { Demo, Option } from '../../../engine/types';
+import type { Demo, Option, Step } from '../../../engine/types';
 import { o } from './_helpers';
 
 const sw = (...colors: string[]) => ({ kind: 'swatch' as const, colors });
@@ -95,4 +95,25 @@ export const EVITAR: Option[] = [
   o('sin-borroso', 'Sin desenfoque', 'tack-sharp details throughout', 'detalles nítidos en toda la imagen', { meta: { avoid: ['blurry', 'out of focus'] } }),
   o('sin-saturar', 'Sin colores saturados', 'natural, balanced colors', 'colores naturales y equilibrados', { hint: 'Evita el look "pasado de color".', meta: { avoid: ['oversaturated colors'] } }),
   o('sin-fondo-recargado', 'Sin fondo recargado', 'a simple uncluttered background', 'un fondo simple y despejado', { meta: { avoid: ['cluttered background', 'busy background'] } }),
+];
+
+/** Categorías de paletas, atmósferas y texturas. */
+export const PALETAS_GROUPS: Step['groups'] = [
+  { id: 'suaves', label: { es: 'Suaves y neutras' }, optionIds: ['pastel', 'monocromo', 'blanco-negro', 'nordico', 'cafe', 'corporativo'] },
+  { id: 'calidas', label: { es: 'Cálidas' }, optionIds: ['tierra', 'atardecer', 'otono-paleta', 'caramelo', 'retro70', 'vintage'] },
+  { id: 'naturales', label: { es: 'Frías y naturales' }, optionIds: ['oceano', 'bosque', 'mediterraneo'] },
+  { id: 'intensas', label: { es: 'Intensas' }, optionIds: ['neon', 'vibrante', 'tropical', 'cyberpunk-paleta'] },
+  { id: 'elegantes', label: { es: 'Elegantes y oscuras' }, optionIds: ['lujo', 'joya', 'gotico'] },
+];
+
+export const ATMOSFERAS_GROUPS: Step['groups'] = [
+  { id: 'luminosas', label: { es: 'Luminosas' }, optionIds: ['serena', 'alegre', 'acogedora', 'romantica', 'festiva', 'energica'] },
+  { id: 'intensas', label: { es: 'Intensas' }, optionIds: ['dramatica', 'epica', 'caotica', 'futurista', 'lujosa'] },
+  { id: 'oscuras', label: { es: 'Oscuras' }, optionIds: ['misteriosa', 'inquietante', 'melancolica', 'solitaria'] },
+  { id: 'intimas', label: { es: 'Íntimas y nostálgicas' }, optionIds: ['nostalgica', 'onirica', 'intima'] },
+];
+
+export const TEXTURAS_GROUPS: Step['groups'] = [
+  { id: 'impresion', label: { es: 'Película y papel' }, optionIds: ['grano', 'papel', 'trama', 'lienzo', 'grunge', 'vhs'] },
+  { id: 'superficie', label: { es: 'Superficie' }, optionIds: ['brillante', 'mate', 'metalico', 'holografico'] },
 ];

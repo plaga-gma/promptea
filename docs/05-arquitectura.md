@@ -22,7 +22,8 @@ promptea/
 │   │   └── imagenes/
 │   │       ├── section.ts         La sección y sus áreas
 │   │       ├── areas/             generacion.ts, edicion.ts, diseno.ts (pasos de cada área)
-│   │       └── library/           Catálogo: estilos, luz, cámara, color, tipografía, diseño, edición
+│   │       └── library/           Catálogo: estilos, luz, cámara, color, tipografía, diseño, edición,
+│   │                                  detalles.ts (subopciones de cada opción)
 │   ├── components/
 │   │   ├── builder/               Constructor (Preact): Builder, StepView, PromptPanel
 │   │   ├── demos/                 Demos visuales: Demo.tsx, esquemas SVG, filtros SVG, fotos de muestra
@@ -38,7 +39,8 @@ promptea/
 
 ```
 Usuario elige (botones / texto)
-        │  Selections  { pasoId: id | ids | texto | campos }
+        │  Selections  { pasoId: id | ids | texto | campos,
+        │                "paso/opción/detalle": ids, "paso/opción/nota": texto }
         ▼
 buildSpec(area, selections)            src/engine/build.ts
         │  PromptSpec  { segmentos por rol, formato, evitar, colores, textos }
@@ -62,6 +64,22 @@ o('id-unico', 'Nombre visible', 'fragment in English', 'fragmento en español', 
 });
 ```
 `npm test` verifica que no haya ids repetidos y que tenga ambos idiomas.
+
+### Subopciones y notas
+Una opción puede abrir **subopciones** (`Detail`): chips más específicos que se muestran debajo cuando la opción está elegida. Se declaran en `library/detalles.ts` con `d(id, 'Nombre', [opciones], extra)` y se enganchan:
+- a opciones puntuales con `withDetails(LISTA, { 'id-opcion': [detalles] })` en el área, o
+- a todas las opciones de un paso con `details: [...]` en el paso (con `except` para las que no aplican).
+
+Cómo entran al prompt (`refineOption` en `build.ts`):
+- por defecto se suman después del fragmento de la opción, con una coma (`template` cambia la redacción);
+- si el prompt de la opción tiene `{d:<id>}`, el valor va ahí (y `default` si no se eligió nada);
+- `fillsTarget: true` completa el `{target}` de una operación de Edición y vuelve opcional el texto libre;
+- `role` lo manda a otro bloque del prompt (se usa en el tipo de imagen y de pieza, que van pegados al sujeto).
+
+Cada opción elegida tiene además una **nota** libre que va tal cual, pegada a su fragmento (ver decisión T15). Las claves en `Selections` son `paso/opción/detalle` y `paso/opción/nota`; al desmarcar una opción se borran (`pruneDetails`). `npm test` verifica que cada `{d:…}` tenga su subopción y que no haya ids repetidos.
+
+### Categorías
+Las listas largas se dividen con `groups` en el paso. En la vista "Todos" se ven todas las categorías con su título (con más de 40 opciones, las 4 primeras de cada una). `npm test` exige categorías en toda lista de más de 10 opciones y que cada opción esté en alguna.
 
 ### Agregar una imagen de ejemplo a un estilo
 Guardar la imagen en `public/demos/estilos/<id>.webp` (≈ 400×300, < 40 KB) y pasar la ruta como tercer argumento de `img()`:

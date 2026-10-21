@@ -1,6 +1,7 @@
-import { useContext, useState } from 'preact/hooks';
+import { useContext, useRef, useState } from 'preact/hooks';
+import { detailKey, detailsOf, NOTE_MAX, noteKey } from '../../engine/build';
 import { harmonyPalette, bestTextPair, HARMONIES, type Harmony } from '../../engine/color';
-import type { Option, SelectionValue, Step } from '../../engine/types';
+import type { Detail, Option, SegmentRole, SelectionValue, Selections, Step } from '../../engine/types';
 import { t } from '../../i18n/es';
 import { url } from '../../lib/url';
 import { Demo } from '../demos/Demo';
@@ -12,18 +13,138 @@ interface Props {
   value: SelectionValue | undefined;
   /** Reemplaza el ejemplo del paso de texto libre (depende de otra elección). */
   placeholder?: string;
+  /** El paso es obligatorio pero ya se completó de otra forma (una subopción llenó el objetivo). */
+  optional?: boolean;
+  /** Todas las elecciones: las subopciones y notas de cada opción viven en claves propias. */
+  selections: Selections;
   onChange: (value: SelectionValue | undefined) => void;
+  onSetKey: (key: string, value: SelectionValue | undefined) => void;
 }
 
-const COLLAPSED = 12;
+type GridProps = Pick<Props, 'step' | 'value' | 'onChange' | 'selections' | 'onSetKey'>;
 
-function OptionCard({ option, selected, onClick }: { option: Option; selected: boolean; onClick: () => void }) {
+const COLLAPSED = 12;
+/** Con listas largas, la vista "Todos" muestra las primeras de cada categoría. */
+const GROUP_PREVIEW = 4;
+const PREVIEW_FROM = 40;
+
+/** Ejemplos para la nota según de qué trata el paso. */
+const NOTE_EXAMPLES: Partial<Record<SegmentRole, string>> = {
+  operation: 'Ej.: que no se note el borde del recorte',
+  lighting: 'Ej.: que la luz entre por la ventana de la izquierda',
+  style: 'Ej.: con trazos más sueltos y un poco de textura',
+  color: 'Ej.: que el violeta sea el color principal',
+  typography: 'Ej.: letras un poco inclinadas, con aire de cartel viejo',
+  medium: 'Ej.: para usar como fondo de una presentación',
+  mood: 'Ej.: que se sienta como un domingo a la tarde',
+};
+
+function OptionCard({ option, selected, more, onClick }: { option: Option; selected: boolean; more: boolean; onClick: () => void }) {
   return (
     <button type="button" class="opt" aria-pressed={selected} onClick={onClick}>
       <Demo demo={option.demo} label={option.label.es} />
       <span class="opt-label">{option.label.es}</span>
       {option.hint && <span class="opt-hint">{option.hint.es}</span>}
+      {more && <span class="opt-more">{t.builder.hasDetails}</span>}
     </button>
+  );
+}
+
+/** Puntito de color para las subopciones que tienen colores (cielos, neón, pelo…). */
+function Dot({ option }: { option: Option }) {
+  const d = option.demo;
+  const colors = d?.kind === 'swatch' || d?.kind === 'gradient' ? d.colors : undefined;
+  if (!colors?.length) return null;
+  const bg = colors.length === 1 ? colors[0] : `linear-gradient(135deg, ${colors.join(', ')})`;
+  return <span class="dot" style={{ background: bg }} aria-hidden="true" />;
+}
+
+function DetailRow({ step, option, detail, selections, onSetKey }: { step: Step; option: Option; detail: Detail } & Pick<Props, 'selections' | 'onSetKey'>) {
+  const key = detailKey(step.id, option.id, detail.id);
+  const v = selections[key];
+  const chosen = Array.isArray(v) ? v : typeof v === 'string' ? [v] : [];
+  const multi = detail.type === 'multi';
+  const max = detail.max ?? Infinity;
+  const toggle = (id: string) => {
+    let next: string[];
+    if (chosen.includes(id)) next = chosen.filter((c) => c !== id);
+    else if (!multi) next = [id];
+    else next = [...chosen, id].slice(-max);
+    onSetKey(key, next.length ? next : undefined);
+  };
+  return (
+    <div class="detail" role="group" aria-label={detail.label.es}>
+      <span class="detail-label">
+        {detail.label.es}
+        {multi && <span class="muted"> · {detail.max ? t.builder.upTo(detail.max).toLowerCase() : 'podés elegir varias'}</span>}
+      </span>
+      <div class="chips">
+        {detail.options.map((o) => (
+          <button key={o.id} type="button" class="chip" aria-pressed={chosen.includes(o.id)} title={o.hint?.es} onClick={() => toggle(o.id)}>
+            <Dot option={o} />
+            {o.label.es}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Lo que se abre debajo de una opción elegida: sus subopciones y una nota libre. */
+function Refine({ step, option, selections, onSetKey }: { step: Step; option: Option } & Pick<Props, 'selections' | 'onSetKey'>) {
+  const details = detailsOf(step, option);
+  const nKey = noteKey(step.id, option.id);
+  const note = typeof selections[nKey] === 'string' ? (selections[nKey] as string) : '';
+  const [noteOpen, setNoteOpen] = useState(note !== '');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const openNote = () => {
+    setNoteOpen(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+  return (
+    <div class={`refine${details.length ? '' : ' compact'}`}>
+      <p class="refine-title">
+        <span class="refine-check" aria-hidden="true">✓</span> <strong>{option.label.es}</strong>
+        {details.length > 0 && <span class="muted"> · {t.builder.refine}</span>}
+        {!noteOpen && (
+          <button type="button" class="btn btn-sm btn-ghost add-note" onClick={openNote}>
+            {t.builder.addNote}
+          </button>
+        )}
+      </p>
+      {details.map((d) => (
+        <DetailRow key={d.id} step={step} option={option} detail={d} selections={selections} onSetKey={onSetKey} />
+      ))}
+      {noteOpen && (
+        <div class="note field">
+          <label for={`nota-${step.id}-${option.id}`}>{t.builder.noteLabel(option.label.es)}</label>
+          <div class="note-row">
+            <input
+              ref={inputRef}
+              id={`nota-${step.id}-${option.id}`}
+              type="text"
+              maxLength={NOTE_MAX}
+              placeholder={NOTE_EXAMPLES[step.role] ?? 'Ej.: algo que no encontraste en las opciones'}
+              value={note}
+              onInput={(e) => onSetKey(nKey, (e.currentTarget as HTMLInputElement).value || undefined)}
+            />
+            <button
+              type="button"
+              class="btn btn-sm btn-ghost"
+              aria-label={t.builder.removeNote}
+              title={t.builder.removeNote}
+              onClick={() => {
+                onSetKey(nKey, undefined);
+                setNoteOpen(false);
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <span class="small muted">{t.builder.noteTip}</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -43,9 +164,10 @@ function SamplePicker() {
   );
 }
 
-function OptionGrid({ step, value, onChange }: Omit<Props, 'index' | 'placeholder'>) {
+function OptionGrid({ step, value, onChange, selections, onSetKey }: GridProps) {
   const [group, setGroup] = useState<string>('all');
   const [expanded, setExpanded] = useState(false);
+  const toolbar = useRef<HTMLDivElement>(null);
   const selected = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
   const max = step.type === 'multi' ? (step.max ?? Infinity) : 1;
 
@@ -61,18 +183,61 @@ function OptionGrid({ step, value, onChange }: Omit<Props, 'index' | 'placeholde
   };
 
   const options = step.options ?? [];
-  const inGroup = step.groups && group !== 'all' ? step.groups.find((g) => g.id === group)?.optionIds ?? [] : null;
-  const filtered = inGroup ? options.filter((o) => inGroup.includes(o.id)) : options;
-  const collapsible = !inGroup && filtered.length > COLLAPSED + 2;
-  const shown = collapsible && !expanded ? filtered.slice(0, COLLAPSED) : filtered;
+  const byId = new Map(options.map((o) => [o.id, o]));
+  const card = (o: Option) => (
+    <OptionCard key={o.id} option={o} selected={selected.includes(o.id)} more={Boolean(o.details?.length)} onClick={() => toggle(o.id)} />
+  );
+  const openGroup = (id: string) => {
+    setGroup(id);
+    toolbar.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const onPhoto = options.some((o) => o.demo?.kind === 'filter' || o.demo?.kind === 'compare' || o.demo?.kind === 'strength');
+  const chosen = selected.map((id) => byId.get(id)).filter((o): o is Option => Boolean(o));
+
+  let body;
+  if (step.groups && group === 'all') {
+    // Vista "Todos": cada categoría con su título. Con listas largas, solo las primeras de cada una.
+    const preview = options.length > PREVIEW_FROM;
+    body = step.groups.map((g) => {
+      const all = g.optionIds.map((id) => byId.get(id)).filter((o): o is Option => Boolean(o));
+      const shown = preview ? all.filter((o, i) => i < GROUP_PREVIEW || selected.includes(o.id)) : all;
+      return (
+        <div class="cat" key={g.id}>
+          <h3 class="cat-title">
+            {g.label.es} <span class="muted">{all.length}</span>
+          </h3>
+          <div class="grid">{shown.map(card)}</div>
+          {shown.length < all.length && (
+            <button type="button" class="btn btn-sm btn-ghost cat-more" onClick={() => openGroup(g.id)}>
+              {t.builder.seeGroup(all.length, g.label.es)} →
+            </button>
+          )}
+        </div>
+      );
+    });
+  } else {
+    const inGroup = step.groups ? step.groups.find((g) => g.id === group)?.optionIds ?? [] : null;
+    const filtered = inGroup ? inGroup.map((id) => byId.get(id)).filter((o): o is Option => Boolean(o)) : options;
+    const collapsible = !inGroup && filtered.length > COLLAPSED + 2;
+    const shown = collapsible && !expanded ? filtered.slice(0, COLLAPSED) : filtered;
+    body = (
+      <>
+        <div class="grid">{shown.map(card)}</div>
+        {collapsible && (
+          <button type="button" class="btn btn-sm more" onClick={() => setExpanded(!expanded)}>
+            {expanded ? t.builder.showLess : t.builder.showAll(filtered.length)}
+          </button>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
       {onPhoto && <SamplePicker />}
       {step.groups && (
-        <div class="groups" role="toolbar" aria-label="Filtrar">
+        <div class="groups" role="toolbar" aria-label="Categorías" ref={toolbar}>
           <button type="button" class="chip" aria-pressed={group === 'all'} onClick={() => setGroup('all')}>
             {t.builder.all}
           </button>
@@ -83,21 +248,15 @@ function OptionGrid({ step, value, onChange }: Omit<Props, 'index' | 'placeholde
           ))}
         </div>
       )}
-      <div class="grid">
-        {shown.map((o) => (
-          <OptionCard key={o.id} option={o} selected={selected.includes(o.id)} onClick={() => toggle(o.id)} />
-        ))}
-      </div>
-      {collapsible && (
-        <button type="button" class="btn btn-sm more" onClick={() => setExpanded(!expanded)}>
-          {expanded ? t.builder.showLess : t.builder.showAll(filtered.length)}
-        </button>
-      )}
+      {body}
+      {chosen.map((o) => (
+        <Refine key={o.id} step={step} option={o} selections={selections} onSetKey={onSetKey} />
+      ))}
     </>
   );
 }
 
-function ColorStep({ step, value, onChange }: Omit<Props, 'index' | 'placeholder'>) {
+function ColorStep({ step, value, onChange, selections, onSetKey }: GridProps) {
   const record = value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
   const [open, setOpen] = useState(Boolean(record && !record.palette && record.colors));
   const [base, setBase] = useState('#6d4aff');
@@ -115,7 +274,13 @@ function ColorStep({ step, value, onChange }: Omit<Props, 'index' | 'placeholder
 
   return (
     <>
-      <OptionGrid step={{ ...step, type: 'single' }} value={record?.palette} onChange={(v) => pick(v as string | undefined)} />
+      <OptionGrid
+        step={{ ...step, type: 'single' }}
+        value={record?.palette}
+        onChange={(v) => pick(v as string | undefined)}
+        selections={selections}
+        onSetKey={onSetKey}
+      />
       <details class="harmony" open={open} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
         <summary>Crear mi propia paleta con armonías de color</summary>
         <p class="muted small">
@@ -165,7 +330,7 @@ function ColorStep({ step, value, onChange }: Omit<Props, 'index' | 'placeholder
   );
 }
 
-export function StepView({ step, index, value, placeholder, onChange }: Props) {
+export function StepView({ step, index, value, placeholder, optional, selections, onChange, onSetKey }: Props) {
   const hasValue =
     value !== undefined && (typeof value === 'string' ? value.trim() !== '' : Array.isArray(value) ? value.length > 0 : Object.values(value).some((v) => v?.trim()));
   const fields = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -173,13 +338,13 @@ export function StepView({ step, index, value, placeholder, onChange }: Props) {
   return (
     <section class="step" id={`paso-${step.id}`} aria-labelledby={`t-${step.id}`}>
       <header class="step-head">
-        <span class={`num${hasValue ? ' done' : ''}`} aria-hidden="true">
-          {hasValue ? '✓' : index + 1}
+        <span class={`num${hasValue || optional ? ' done' : ''}`} aria-hidden="true">
+          {hasValue || optional ? '✓' : index + 1}
         </span>
         <div>
           <h2 id={`t-${step.id}`}>
             {step.title.es}
-            <span class={`tag${step.required ? ' req' : ''}`}>{step.required ? t.builder.required : t.builder.optional}</span>
+            <span class={`tag${step.required && !optional ? ' req' : ''}`}>{step.required && !optional ? t.builder.required : t.builder.optional}</span>
             {step.type === 'multi' && step.max && <span class="tag">{t.builder.upTo(step.max)}</span>}
           </h2>
           <p class="why">{step.why.es}</p>
@@ -191,14 +356,16 @@ export function StepView({ step, index, value, placeholder, onChange }: Props) {
         )}
       </header>
 
-      {(step.type === 'single' || step.type === 'multi') && <OptionGrid step={step} value={value} onChange={onChange} />}
-      {step.type === 'color' && <ColorStep step={step} value={value} onChange={onChange} />}
+      {(step.type === 'single' || step.type === 'multi') && (
+        <OptionGrid step={step} value={value} onChange={onChange} selections={selections} onSetKey={onSetKey} />
+      )}
+      {step.type === 'color' && <ColorStep step={step} value={value} onChange={onChange} selections={selections} onSetKey={onSetKey} />}
       {step.type === 'text' && (
         <div class="field">
           <textarea
             rows={2}
             maxLength={300}
-            placeholder={placeholder ?? step.placeholder?.es}
+            placeholder={optional ? t.builder.targetOptional : (placeholder ?? step.placeholder?.es)}
             value={typeof value === 'string' ? value : ''}
             onInput={(e) => onChange((e.currentTarget as HTMLTextAreaElement).value || undefined)}
             aria-labelledby={`t-${step.id}`}

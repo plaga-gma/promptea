@@ -1,8 +1,9 @@
 import type { Area } from '../../../engine/types';
 import { EVITAR, FORMATOS } from '../library/color';
+import { DETALLE_FUERZA_ESTILO, DETALLES_ESTILOS, DETALLES_FILTROS, DETALLES_LUZ, DETALLES_OPERACIONES, withDetails } from '../library/detalles';
 import { DANOS, DUOTONOS, EPOCAS, FILTROS, FILTROS_GROUPS, INTENSIDADES, OPERACIONES, POSTER_TRAP, PRESERVAR } from '../library/edicion';
 import { ESTILOS, ESTILOS_GROUPS } from '../library/estilos';
-import { ILUMINACION } from '../library/foto';
+import { ILUMINACION, ILUMINACION_GROUPS } from '../library/foto';
 
 export const edicion: Area = {
   id: 'edicion',
@@ -25,7 +26,7 @@ export const edicion: Area = {
       role: 'operation',
       type: 'single',
       required: true,
-      options: OPERACIONES,
+      options: withDetails(OPERACIONES, DETALLES_OPERACIONES),
       groups: [
         { id: 'objetos', label: { es: 'Objetos y fondo' }, optionIds: ['quitar-objeto', 'quitar-fondo', 'cambiar-fondo', 'desenfocar-fondo', 'cambiar-cielo', 'agregar', 'cambiar', 'mover', 'montaje', 'texto'] },
         { id: 'personas', label: { es: 'Personas' }, optionIds: ['retoque', 'retrato-pro', 'ropa', 'peinado', 'expresion', 'edad'] },
@@ -63,8 +64,9 @@ export const edicion: Area = {
       role: 'style',
       type: 'single',
       required: true,
-      options: ESTILOS,
+      options: withDetails(ESTILOS, DETALLES_ESTILOS),
       groups: ESTILOS_GROUPS,
+      details: [DETALLE_FUERZA_ESTILO],
       showIf: { step: 'operacion', in: ['estilo'] },
       template: { en: 'New style: {value}', es: 'Nuevo estilo: {value}' },
     },
@@ -75,7 +77,7 @@ export const edicion: Area = {
       role: 'style',
       type: 'single',
       required: true,
-      options: FILTROS,
+      options: withDetails(FILTROS, DETALLES_FILTROS),
       groups: FILTROS_GROUPS,
       showIf: { step: 'operacion', in: ['filtro'] },
       template: { en: 'Look: {value}', es: 'Look: {value}' },
@@ -130,6 +132,8 @@ export const edicion: Area = {
       type: 'single',
       required: true,
       options: ILUMINACION,
+      groups: ILUMINACION_GROUPS,
+      details: DETALLES_LUZ,
       showIf: { step: 'operacion', in: ['reiluminar'] },
       template: { en: 'New lighting: {value}', es: 'Nueva iluminación: {value}' },
     },

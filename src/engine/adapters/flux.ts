@@ -1,5 +1,5 @@
 import type { ModelAdapter } from '../types';
-import { bodySentences, editIntro, leadSentence, ratioWords } from './shared';
+import { bodySentences, editIntro, leadSentence, ratioWords, spanishNotesTip } from './shared';
 
 /** FLUX.2 / Kontext: lenguaje natural, lo crítico primero, colores en HEX, sin negativos. */
 export const flux: ModelAdapter = {
@@ -16,6 +16,7 @@ export const flux: ModelAdapter = {
       notes: [
         { es: 'FLUX no tiene campo negativo: lo que querías evitar está escrito en positivo.' },
         { es: 'Elegí la proporción también en el selector de tamaño de la app.' },
+        ...spanishNotesTip(spec, 'FLUX'),
       ],
     };
   },

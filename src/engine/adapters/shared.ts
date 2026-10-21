@@ -147,3 +147,14 @@ export function editIntro(spec: PromptSpec, lang: Lang): string {
 export const NOTE_FREE_TEXT = {
   es: 'Lo que escribiste con tus palabras queda tal cual. Si lo escribís en inglés, el resultado suele ser más preciso.',
 };
+
+/** Una nota parece escrita en español (tildes, ñ o palabras muy comunes). */
+export function looksSpanish(text: string): boolean {
+  return /[áéíóúñ¿¡]/i.test(text) || /\b(que|con|sin|del|las|los|una|para|más|muy|pero|como|esté|tiene)\b/i.test(text);
+}
+
+/** Consejo para IAs que entienden poco el español cuando alguna nota está en español. */
+export function spanishNotesTip(spec: PromptSpec, name: string): { es: string }[] {
+  if (!spec.notes.some(looksSpanish)) return [];
+  return [{ es: `Tus notas van tal cual en el prompt. ${name} entiende mucho mejor el inglés: si podés, escribilas en inglés.` }];
+}
