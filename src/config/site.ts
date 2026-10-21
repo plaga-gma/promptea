@@ -6,5 +6,5 @@ export const SITE = {
     'Promptea convierte lo que elegís con botones y ejemplos visuales en prompts expertos para generar, editar y diseñar imágenes con ChatGPT, Gemini, Meta AI, Midjourney, FLUX y más.',
   lang: 'es',
   locale: 'es_AR',
-  repoUrl: '', // se completa al crear el repositorio en GitHub
+  repoUrl: 'https://github.com/plaga-gma/promptea',
 };
