@@ -128,6 +128,21 @@ export const PLACES: Record<string, Place> = {
   paris: { props: ['🗼'], ground: '#adb5bd' },
 };
 
+/** Silueta del fondo (montañas, edificios, olas…) que dibuja la vista previa detrás del sujeto. */
+export type Backdrop = 'hills' | 'city' | 'mountains' | 'forest' | 'sea' | 'dunes' | 'room' | 'space' | 'snow' | 'stage' | 'clouds';
+
+export const SCENERY: Record<string, Backdrop> = {
+  playa: 'sea', mar: 'sea', oceano: 'sea', isla: 'sea', acantilado: 'sea', agua: 'sea', lago: 'forest', rio: 'forest',
+  bosque: 'forest', selva: 'forest', jungla: 'forest', cascada: 'forest', jardin: 'hills', parque: 'hills', campo: 'hills',
+  granja: 'hills', pradera: 'hills', montana: 'mountains', montanas: 'mountains', volcan: 'mountains', castillo: 'mountains',
+  desierto: 'dunes', marte: 'dunes', ruinas: 'dunes', templo: 'mountains', nieve: 'snow', hielo: 'snow',
+  ciudad: 'city', calle: 'city', callejon: 'city', pueblo: 'city', plaza: 'city', tokio: 'city', paris: 'city',
+  espacio: 'space', galaxia: 'space', luna: 'space', planeta: 'space', cielo: 'clouds', nubes: 'clouds',
+  cocina: 'room', living: 'room', habitacion: 'room', cuarto: 'room', oficina: 'room', biblioteca: 'room', cafe: 'room',
+  cafeteria: 'room', bar: 'room', restaurante: 'room', mercado: 'city', mesa: 'room', cueva: 'mountains',
+  estudio: 'stage', escenario: 'stage', estadio: 'stage', submarino: 'sea', arrecife: 'sea',
+};
+
 /** Ícono del tipo de pieza de diseño cuando no trae uno propio. */
 export const PIECE_GLYPHS: Record<string, string> = {
   logo: '🔷', icono: '📱', post: '🖼️', historia: '📲', flyer: '📄', poster: '🪧', 'portada-libro': '📕', 'portada-album': '💿',

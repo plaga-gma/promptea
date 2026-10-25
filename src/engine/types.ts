@@ -250,6 +250,12 @@ export interface Stage {
   steps: string[];
 }
 
+/** Zona de la escena 3D: una parte del set (el protagonista, la luz, la cámara…) que se toca para abrir sus pasos. */
+export interface StudioZone extends Stage {
+  /** Qué se elige acá, en pocas palabras (debajo del título del panel). */
+  hint: LocalizedText;
+}
+
 /** Receta: un punto de partida que completa varios pasos de una vez. */
 export interface Preset {
   id: string;
@@ -292,6 +298,8 @@ export interface Area {
   steps: Step[];
   /** Niveles del constructor. Sin etapas, cada paso es su propio nivel. */
   stages?: Stage[];
+  /** Zonas de la escena 3D (si existen, el constructor se arma como un set en una sola pantalla). */
+  studio?: StudioZone[];
   presets?: Preset[];
   assistant?: AssistantData;
 }

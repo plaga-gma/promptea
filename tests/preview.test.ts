@@ -37,6 +37,33 @@ describe('vista previa', () => {
     expect(s.weather).toContain('rain');
   });
 
+  it('generación: más detalle (fondo, objeto en la mano, cara, lente y guía)', () => {
+    const s = buildScene(
+      gen,
+      { sujeto: 'un zorro', accion: 'leyendo un libro en el bosque', expresion: ['sonrisa'], lente: 'retrato', composicion: ['tercios'], angulo: 'picado', plano: 'primer-plano' },
+      true,
+    );
+    expect(s.backdrop).toBe('forest');
+    expect(s.held).toBe('📚');
+    expect(s.face).toBe('🙂');
+    expect(s.dof).toBe(true);
+    expect(s.guide).toBe('tercios');
+    expect(s.angle).toBe('picado');
+    expect(s.framing).toBeGreaterThan(70);
+    // El lugar de la acción no es un objeto en la mano.
+    expect(buildScene(gen, { sujeto: 'un perro', accion: 'corriendo por la playa' }, true).held).toBeUndefined();
+    expect(buildScene(gen, { sujeto: 'una nave', entorno: 'en el espacio' }, true).backdrop).toBe('space');
+    expect(buildScene(gen, { sujeto: 'un gato', entorno: 'en la ciudad de noche' }, true).night).toBe(true);
+    expect(buildScene(gen, { sujeto: 'un gato', entorno: 'en la ciudad' }, true).night).toBe(false);
+    expect(buildScene(gen, { sujeto: 'un gato', iluminacion: ['neon'] }, true).night).toBe(true);
+  });
+
+  it('escena 3D: las zonas cubren todos los pasos de Generación una sola vez', () => {
+    const ids = (gen.studio ?? []).flatMap((z) => z.steps);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect([...ids].sort()).toEqual(gen.steps.map((s) => s.id).sort());
+  });
+
   it('las elecciones del asistente se marcan', () => {
     const s = buildScene(gen, { sujeto: 'un gato', iluminacion: ['luna'] }, true, new Set(['iluminacion']));
     expect(s.tags.find((t) => t.stepId === 'iluminacion')?.auto).toBe(true);

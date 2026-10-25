@@ -2,11 +2,12 @@ import { useContext } from 'preact/hooks';
 import { url } from '../../lib/url';
 import { useGoogleFont } from '../demos/Demo';
 import { DemoContext, samplePhoto } from '../demos/photos';
+import { Backdrop } from './Backdrop';
 import type { DesignScene, EditScene, Scene, Sprite } from './scene';
 import './preview.css';
 
 /** Unidades relativas al alto del cuadro: los íconos escalan con la vista previa. */
-const fs = (size: number) => `${(size * 0.82).toFixed(1)}cqh`;
+export const fs = (size: number) => `${(size * 0.82).toFixed(1)}cqh`;
 
 function SpriteView({ s, cls = '' }: { s: Sprite; cls?: string }) {
   return (
@@ -17,7 +18,7 @@ function SpriteView({ s, cls = '' }: { s: Sprite; cls?: string }) {
 }
 
 /** Lluvia, nieve, niebla, estrellas y brillos: capas de CSS animadas (quietas si el usuario prefiere menos movimiento). */
-function WeatherLayer({ kinds }: { kinds: Scene['weather'] }) {
+export function WeatherLayer({ kinds }: { kinds: Scene['weather'] }) {
   return (
     <>
       {kinds.map((k) =>
@@ -37,36 +38,79 @@ function WeatherLayer({ kinds }: { kinds: Scene['weather'] }) {
   );
 }
 
+/** Brillo de la luz sobre el borde del sujeto: neón de dos colores, fuego, sol del lado de donde viene. */
+function rimOf(light: Scene['light']): string | undefined {
+  const side = light.x < 50 ? -1 : 1;
+  switch (light.kind) {
+    case 'neon':
+      return 'drop-shadow(-0.9cqh 0 1.2cqh #ff2bd6cc) drop-shadow(0.9cqh 0 1.2cqh #00e5ffcc)';
+    case 'fire':
+      return `drop-shadow(${side * 0.8}cqh 0.4cqh 1.4cqh #ff8c32cc)`;
+    case 'sun':
+      return `drop-shadow(${side * 0.7}cqh -0.3cqh 1.2cqh #ffd166bb)`;
+    case 'moon':
+      return `drop-shadow(${side * 0.6}cqh -0.3cqh 1.2cqh #a9c4ffaa)`;
+    case 'studio':
+    case 'rays':
+      return 'drop-shadow(0 0 1cqh #ffffffaa)';
+    default:
+      return undefined;
+  }
+}
+
+/** El sujeto con lo que lo acompaña: lo que tiene en la mano, su cara y su ropa (en em: escalan con él). */
+export function Actor({ scene, inline }: { scene: Scene; inline?: boolean }) {
+  const s = scene.subject;
+  if (!s) return null;
+  return (
+    <span
+      key={s.glyph}
+      class={`pv-sprite pv-subject ${scene.look} ${s.known ? '' : 'pv-unknown'} ${inline ? 'pv-inline' : ''}`}
+      style={inline ? undefined : { left: `${s.x}%`, top: `${s.y}%`, fontSize: fs(s.size) }}
+    >
+      <span class="pv-glyph" style={{ filter: rimOf(scene.light) }}>
+        {s.glyph}
+      </span>
+      {scene.held && <span class="pv-held">{scene.held}</span>}
+      {scene.face && <span class="pv-face">{scene.face}</span>}
+      {scene.outfit && <span class="pv-outfit">{scene.outfit}</span>}
+    </span>
+  );
+}
+
+export function LightView({ light }: { light: Scene['light'] }) {
+  if (light.kind === 'sun' || light.kind === 'moon')
+    return (
+      <span
+        class={`pv-orb pv-${light.kind}`}
+        style={{ left: `${light.x}%`, top: `${light.y}%`, background: light.kind === 'moon' ? undefined : light.color, boxShadow: light.glow }}
+      />
+    );
+  if (light.kind === 'none') return null;
+  return <span class={`pv-light pv-${light.kind}`} style={{ '--lx': `${light.x}%`, '--ly': `${light.y}%` }} />;
+}
+
 function GenerateView({ scene }: { scene: Scene }) {
-  const { light } = scene;
+  const s = scene.subject;
+  const base = s ? s.y + s.size * 0.42 : 0;
   return (
     <div
-      class={`pv-scene view-${scene.view}`}
+      class={`pv-scene view-${scene.view} ${scene.dof ? 'is-dof' : ''} ${scene.lens ? `lens-${scene.lens}` : ''}`}
       style={{ background: scene.sky, filter: scene.filter, transform: scene.tilt ? `rotate(${scene.tilt}deg) scale(1.18)` : undefined }}
     >
-      {light.kind === 'sun' || light.kind === 'moon' ? (
-        <span
-          class={`pv-orb pv-${light.kind}`}
-          style={{ left: `${light.x}%`, top: `${light.y}%`, background: light.kind === 'moon' ? undefined : light.color, boxShadow: light.glow }}
-        />
-      ) : light.kind !== 'none' ? (
-        <span class={`pv-light pv-${light.kind}`} style={{ '--lx': `${light.x}%`, '--ly': `${light.y}%` }} />
-      ) : null}
+      <LightView light={scene.light} />
+      <Backdrop kind={scene.backdrop} ground={scene.ground} night={scene.night} horizon={scene.horizon} blur={scene.dof} />
       {scene.props.map((p, i) => (
         <SpriteView key={`${p.glyph}${i}`} s={p} cls="pv-prop" />
       ))}
       {scene.ground && <span class="pv-ground" style={{ top: `${scene.horizon}%`, background: scene.ground }} />}
-      {scene.subject && (
-        <span
-          key={scene.subject.glyph}
-          class={`pv-sprite pv-subject ${scene.look} ${scene.subject.known ? '' : 'pv-unknown'}`}
-          style={{ left: `${scene.subject.x}%`, top: `${scene.subject.y}%`, fontSize: fs(scene.subject.size) }}
-        >
-          {scene.subject.glyph}
-        </span>
+      {s && scene.ground && base < 100 && (
+        <span class="pv-shadow" style={{ left: `${s.x}%`, top: `${Math.max(base, scene.horizon + 1)}%`, width: fs(s.size * 0.75), height: fs(s.size * 0.12) }} />
       )}
+      <Actor scene={scene} />
       {scene.companion && <SpriteView s={scene.companion} cls={`pv-companion ${scene.look}`} />}
       <WeatherLayer kinds={scene.weather} />
+      {scene.lens === 'tiltshift' && <span class="pv-tilt" />}
       {scene.palette.length > 0 && (
         <span class="pv-palette" aria-hidden="true">
           {scene.palette.slice(0, 5).map((c) => (

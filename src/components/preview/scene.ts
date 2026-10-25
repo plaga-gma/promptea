@@ -1,7 +1,7 @@
 import { isStepVisible, selectedOptions } from '../../engine/build';
 import { normalize } from '../../engine/assistant';
 import type { Area, Demo, FilterOverlay, Option, Selections } from '../../engine/types';
-import { MEDIUM_GLYPHS, OPERATION_GLYPHS, PIECE_GLYPHS, PLACES, SUBJECT_GLYPHS, type Place } from './glyphs';
+import { MEDIUM_GLYPHS, OPERATION_GLYPHS, PIECE_GLYPHS, PLACES, SCENERY, SUBJECT_GLYPHS, type Backdrop, type Place } from './glyphs';
 
 /**
  * Vista previa: un resumen gráfico y simplificado del pedido, no la imagen final.
@@ -55,6 +55,23 @@ export interface Scene {
   look: string;
   /** Palabra del clima de ánimo, para el brillo general. */
   mood?: { glyph: string; label: string };
+  /** Silueta del fondo según el lugar, y si es de noche (ventanas prendidas, estrellas). */
+  backdrop: Backdrop;
+  night: boolean;
+  /** Lo que tiene en la mano o usa en la acción ("leyendo un libro" → 📚). */
+  held?: string;
+  /** Cara o pose elegida (globito al lado del sujeto) y ropa. */
+  face?: string;
+  outfit?: string;
+  /** Fondo desenfocado (lente de retrato, bokeh). */
+  dof: boolean;
+  /** Lente especial que deforma o cambia la escena. */
+  lens?: 'wide' | 'fisheye' | 'macro' | 'tele' | 'tiltshift';
+  /** Guía de composición (tercios, centro, simetría…) para el visor de la cámara. */
+  guide?: string;
+  /** Ángulo de cámara elegido y qué tan cerca está (alto del sujeto en %). */
+  angle?: string;
+  framing: number;
   tags: Tag[];
   design?: DesignScene;
   edit?: EditScene;
@@ -114,14 +131,26 @@ export function findGlyph(text: string, dict: Record<string, string>, skip = 0):
   return undefined;
 }
 
-function findPlace(text: string): Place | undefined {
+function findPlace(text: string): (Place & { key: string }) | undefined {
   const words = normalize(text).split(' ');
   for (const w of words) {
-    const p = PLACES[w] ?? PLACES[w.replace(/(es|s)$/, '')];
-    if (p) return p;
+    const key = PLACES[w] ? w : w.replace(/(es|s)$/, '');
+    const p = PLACES[key];
+    if (p) return { ...p, key };
   }
   return undefined;
 }
+
+const GUIDES = ['tercios', 'aurea', 'centrada', 'reflejo', 'diagonal', 'lineas-guia', 'punto-fuga', 'marco', 'triangulo', 'horizonte-bajo'];
+const LENSES: Record<string, Scene['lens']> = {
+  'gran-angular': 'wide',
+  'ojo-pez': 'fisheye',
+  macro: 'macro',
+  'macro-gotas': 'macro',
+  teleobjetivo: 'tele',
+  'tilt-shift': 'tiltshift',
+};
+const DOF = ['retrato', 'teleobjetivo', 'gran-apertura', 'anamorfico', 'bokeh-tec', 'macro'];
 
 const firstColors = (d?: Demo): string[] => {
   if (!d) return [];
@@ -287,7 +316,19 @@ export function buildScene(area: Area, selections: Selections, advanced: boolean
   const found = subjectText ? findGlyph(subjectText, SUBJECT_GLYPHS) : undefined;
   const second = subjectText ? findGlyph(subjectText, SUBJECT_GLYPHS, 1) : undefined;
   const place = findPlace(settingText) ?? findPlace(subjectText);
-  const night = Boolean(place?.night) || pos.kind === 'moon' || pos.kind === 'neon' || moods.some((m) => ['misteriosa', 'aterradora'].includes(m.id));
+  // Lo que usa en la acción, sin confundirlo con el lugar ("caminando por la playa" no es un objeto).
+  const heldHit = (() => {
+    const action = text(selections, 'accion');
+    for (let i = 0; i < 3; i++) {
+      const hit = findGlyph(action, SUBJECT_GLYPHS, i);
+      if (!hit) return undefined;
+      if (!PLACES[hit.word] && hit.glyph !== found?.glyph) return hit;
+    }
+    return undefined;
+  })();
+  const lensIds = pick('lente').concat(pick('tecnica')).map((o) => o.id);
+  const saysNight = /\b(noche|nocturn[ao]s?|medianoche)\b/.test(normalize(`${settingText} ${subjectText}`));
+  const night = saysNight || Boolean(place?.night) || pos.kind === 'moon' || pos.kind === 'neon' || moods.some((m) => ['misteriosa', 'aterradora'].includes(m.id));
 
   const sky = (() => {
     if (lightDemo) return lightDemo.bg;
@@ -297,7 +338,9 @@ export function buildScene(area: Area, selections: Selections, advanced: boolean
     return DEFAULT_SKY;
   })();
 
-  const shotSize = shot ? SHOT_SIZE[shot.id] ?? 44 : 44;
+  const lens = lensIds.map((id) => LENSES[id]).find(Boolean);
+  const baseShot = shot ? SHOT_SIZE[shot.id] ?? 44 : 44;
+  const shotSize = lens === 'macro' ? Math.max(baseShot, 85) : lens === 'wide' || lens === 'fisheye' ? baseShot * 0.85 : baseShot;
   const compIds = comps.map((c) => c.id);
   const x = compIds.includes('tercios') || compIds.includes('aurea') ? 34 : compIds.includes('espacio-negativo') ? 28 : 50;
   const view: Scene['view'] = angle && ['contrapicado', 'gusano'].includes(angle.id) ? 'low' : angle && ['picado', 'cenital', 'aerea'].includes(angle.id) ? 'high' : 'eye';
@@ -325,6 +368,16 @@ export function buildScene(area: Area, selections: Selections, advanced: boolean
     view,
     look: medium ? `look-${medium.id}` : styles[0] ? `look-${styles[0].id}` : '',
     mood: moods[0] ? { glyph: glyphOf(moods[0], '💫'), label: moods[0].label.es } : undefined,
+    backdrop: place ? SCENERY[place.key] ?? 'hills' : night ? 'city' : 'hills',
+    night,
+    held: heldHit?.glyph,
+    face: pick('expresion').map((o) => glyphOf(o, '')).find(Boolean),
+    outfit: pick('vestuario').map((o) => glyphOf(o, '')).find(Boolean),
+    dof: lensIds.some((id) => DOF.includes(id)),
+    lens,
+    guide: compIds.find((id) => GUIDES.includes(id)),
+    angle: angle?.id,
+    framing: shotSize,
     tags,
   };
 

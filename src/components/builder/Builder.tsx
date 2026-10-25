@@ -10,6 +10,7 @@ import { FilterDefs } from '../demos/FilterDefs';
 import { DemoContext, type FilterLook } from '../demos/photos';
 import { Preview } from '../preview/Preview';
 import { buildScene } from '../preview/scene';
+import { PROMPT, START, Studio, type ZoneInfo } from '../studio/Studio';
 import '../demos/demos.css';
 import './builder.css';
 import './game.css';
@@ -71,6 +72,8 @@ export default function Builder({ sectionId, area }: Props) {
   const [photo, setPhoto] = useState('retrato');
   const [autopilot, setAutopilot] = useState(true);
   const [optimal, setOptimal] = useState(true);
+  const [studioOn, setStudioOn] = useState(true);
+  const [zone, setZone] = useState<{ id: string; step?: string }>({ id: START });
   const [skipAuto, setSkipAuto] = useState<string[]>([]);
   const [stage, setStage] = useState(0);
   const [visited, setVisited] = useState<Set<string>>(new Set());
@@ -95,12 +98,14 @@ export default function Builder({ sectionId, area }: Props) {
     setPhoto(prefs.samplePhoto);
     setAutopilot(prefs.autopilot);
     setOptimal(prefs.optimal);
+    setStudioOn(prefs.studio);
     const id = new URLSearchParams(location.search).get('cargar');
     const saved = id ? findSaved(id) : undefined;
     if (saved && saved.areaId === area.id) {
       setSelections(saved.selections);
       setAdvanced(saved.advanced);
       setModelId(saved.modelId);
+      setZone({ id: PROMPT });
     }
     void translatorStatus().then((s) => {
       setAiStatus(s);
@@ -197,6 +202,32 @@ export default function Builder({ sectionId, area }: Props) {
       .filter((s) => s.steps.length > 0),
     { id: FINAL, title: t.game.finalTitle, icon: t.game.finalIcon, steps: [], done: 0 },
   ];
+  // Escena 3D: cada zona del set con sus pasos a la vista y los que esconde el modo simple.
+  const studio = Boolean(area.studio && studioOn);
+  const short = (v: string) => (v.length > 22 ? `${v.slice(0, 21)}…` : v);
+  const zones: ZoneInfo[] = (area.studio ?? []).map((zn) => {
+    const all = zn.steps.map((id) => area.steps.find((s) => s.id === id)).filter((s): s is Step => Boolean(s));
+    const steps = all.filter((s) => isStepVisible(s, advanced, area, full));
+    const hidden = advanced ? 0 : all.filter((s) => s.level === 'advanced' && isStepVisible(s, true, area, full)).length;
+    const textValue = steps.map((s) => (s.type === 'text' && typeof selections[s.id] === 'string' ? (selections[s.id] as string).trim() : '')).find(Boolean);
+    const tag = scene.tags.find((tg) => zn.steps.includes(tg.stepId));
+    return {
+      id: zn.id,
+      title: zn.title.es,
+      icon: zn.icon,
+      hint: zn.hint.es,
+      steps,
+      hidden,
+      done: steps.filter((s) => hasValue(selections[s.id])).length,
+      auto: steps.filter((s) => autoSteps.has(s.id)).length,
+      value: textValue ? short(textValue) : tag ? short(tag.label) : undefined,
+    };
+  });
+  const openZone = (id: string, step?: string) => {
+    setZone({ id, step });
+    setVisited((v) => (v.has(id) ? v : new Set([...v, id])));
+  };
+
   const current = Math.min(stage, stages.length - 1);
   const currentStage = stages[current]!;
 
@@ -210,6 +241,11 @@ export default function Builder({ sectionId, area }: Props) {
   };
 
   const goStep = (stepId: string) => {
+    if (studio) {
+      const zn = zones.find((x) => x.steps.some((s) => s.id === stepId));
+      if (zn) openZone(zn.id, stepId);
+      return;
+    }
     const i = stages.findIndex((s) => s.steps.some((x) => x.id === stepId));
     if (i < 0) return;
     setStage(i);
@@ -257,6 +293,7 @@ export default function Builder({ sectionId, area }: Props) {
     replaceAll({}, t.builder.resetDone);
     setIdea(undefined);
     setStage(0);
+    setZone({ id: START });
     // Un prompt abierto desde "Mis prompts" (?cargar=) no tiene que volver al recargar.
     if (location.search.includes('cargar=')) history.replaceState(null, '', location.pathname);
     top.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -362,6 +399,11 @@ export default function Builder({ sectionId, area }: Props) {
     setPrefs({ optimal: value });
   };
 
+  const changeStudio = (value: boolean) => {
+    setStudioOn(value);
+    setPrefs({ studio: value });
+  };
+
   const enableTranslator = () => {
     setAiStatus('downloading');
     startTranslator()
@@ -386,7 +428,7 @@ export default function Builder({ sectionId, area }: Props) {
     { id: 'inicio', icon: '🌱', title: 'Primer paso', got: hasSelections },
     { id: 'idea', icon: '🤖', title: 'Le contaste tu idea', got: Boolean(idea) },
     { id: 'detalle', icon: '🔍', title: 'Detallista', got: Object.keys(selections).some((k) => k.split('/').length === 3) },
-    { id: 'explorador', icon: '🧭', title: 'Explorador', got: stages.every((s) => visited.has(s.id)) },
+    { id: 'explorador', icon: '🧭', title: 'Explorador', got: studio ? zones.every((z) => visited.has(z.id)) : stages.every((s) => visited.has(s.id)) },
     { id: 'pro', icon: '🎯', title: 'Nivel Pro', got: power.score >= 60 },
     { id: 'leyenda', icon: '👑', title: 'Leyenda', got: power.score >= 95 },
     { id: 'copiado', icon: '📋', title: '¡A la IA!', got: copiedOnce },
@@ -409,6 +451,125 @@ export default function Builder({ sectionId, area }: Props) {
   const isFinal = currentStage.id === FINAL;
   const nextStage = stages[current + 1];
 
+  const toggles = (
+    <div class="toggles">
+      <label class="switch" title={t.game.autopilotHelp}>
+        <input type="checkbox" checked={autopilot} onChange={(e) => changeAutopilot((e.currentTarget as HTMLInputElement).checked)} />
+        <span>
+          🤖<span class="sw-text"> {t.game.autopilot}</span>
+        </span>
+      </label>
+      <label class="switch" title={t.game.optimalHelp}>
+        <input type="checkbox" checked={optimal} onChange={(e) => changeOptimal((e.currentTarget as HTMLInputElement).checked)} />
+        <span>
+          🚀<span class="sw-text"> {t.game.optimal}</span>
+        </span>
+      </label>
+      <label class="switch" title={t.builder.modeHint}>
+        <input type="checkbox" checked={advanced} onChange={(e) => changeAdvanced((e.currentTarget as HTMLInputElement).checked)} />
+        <span>
+          🎛️<span class="sw-text"> {t.builder.advanced}</span>
+        </span>
+      </label>
+    </div>
+  );
+
+  const stepView = (step: Step) => {
+    const pick = auto.picks.find((p) => p.stepId === step.id);
+    const option = pick && step.options?.find((o) => o.id === pick.optionId);
+    return (
+      <StepView
+        key={`${step.id}-${round}`}
+        step={step}
+        index={area.steps.filter((s) => isStepVisible(s, advanced, area, full)).indexOf(step)}
+        value={selections[step.id]}
+        selections={selections}
+        onChange={(v) => update(step.id, v)}
+        onSetKey={setKey}
+        auto={option}
+        skipped={autopilot && skipAuto.includes(step.id)}
+        onAuto={(a) => onAuto(step.id, a)}
+      />
+    );
+  };
+
+  const promptPanel = (
+    <PromptPanel
+      adapter={adapter}
+      result={result}
+      hasContent={hasContent}
+      missing={missing}
+      warnings={warnings}
+      lang={lang}
+      creativity={creativity}
+      favorite={favorite}
+      onModel={changeModel}
+      onLang={setLang}
+      onCreativity={setCreativity}
+      onCopy={onCopy}
+      onOpen={onOpen}
+      onFavorite={() => setFavorite(toggleFavorite(entry()))}
+      canReset={hasSelections}
+      onReset={reset}
+    />
+  );
+
+  const toastView = toast && (
+    <div class="toast" role="status">
+      <span>{toast.text}</span>
+      {toast.undo && (
+        <button type="button" class="btn btn-sm" onClick={restore}>
+          {t.builder.undo}
+        </button>
+      )}
+    </div>
+  );
+
+  if (studio) {
+    return (
+      <DemoContext.Provider value={demoSettings}>
+        <div class="builder game is-studio" ref={top}>
+          <FilterDefs />
+          <Confetti fire={confetti} />
+          <Studio
+            zones={zones}
+            scene={scene}
+            power={power}
+            zone={zone.id}
+            stepId={zone.step}
+            onOpen={openZone}
+            renderStep={stepView}
+            start={
+              <>
+                <IdeaBox area={area} onApply={applyIdea} lastMatches={idea} translate={translate} />
+                <Recipes presets={area.presets ?? []} onPick={applyPreset} />
+              </>
+            }
+            final={
+              <>
+                {promptPanel}
+                {hasContent && <Coach area={area} power={power} onPick={pickSuggestion} onGoStep={goStep} />}
+                <h3>{t.game.achievements}</h3>
+                <Achievements list={achievements} />
+              </>
+            }
+            toggles={toggles}
+            prompt={result.prompt}
+            hasContent={hasContent}
+            adapterName={adapter.url ? adapter.name : undefined}
+            onCopy={async () => {
+              if (await onCopy(result.prompt, true)) showToast(t.panel.copied);
+            }}
+            onOpenAi={adapter.url ? onOpen : undefined}
+            onAdvanced={() => changeAdvanced(true)}
+            onLevels={() => changeStudio(false)}
+          />
+          {toastView}
+        </div>
+      </DemoContext.Provider>
+    );
+  }
+
   return (
     <DemoContext.Provider value={demoSettings}>
       <div class="builder game" ref={top}>
@@ -430,20 +591,12 @@ export default function Builder({ sectionId, area }: Props) {
           <StageMap stages={stages} current={current} onGo={(i) => goStage(i, false)} />
           <div class="hud-row">
             <PowerMeter power={power} />
-            <div class="toggles">
-              <label class="switch" title={t.game.autopilotHelp}>
-                <input type="checkbox" checked={autopilot} onChange={(e) => changeAutopilot((e.currentTarget as HTMLInputElement).checked)} />
-                <span>🤖 {t.game.autopilot}</span>
-              </label>
-              <label class="switch" title={t.game.optimalHelp}>
-                <input type="checkbox" checked={optimal} onChange={(e) => changeOptimal((e.currentTarget as HTMLInputElement).checked)} />
-                <span>🚀 {t.game.optimal}</span>
-              </label>
-              <label class="switch" title={t.builder.modeHint}>
-                <input type="checkbox" checked={advanced} onChange={(e) => changeAdvanced((e.currentTarget as HTMLInputElement).checked)} />
-                <span>🎛️ {t.builder.advanced}</span>
-              </label>
-            </div>
+            {toggles}
+            {area.studio && (
+              <button type="button" class="btn btn-sm" onClick={() => changeStudio(true)}>
+                🧊 {t.studio.scene}
+              </button>
+            )}
           </div>
         </div>
 
@@ -501,24 +654,7 @@ export default function Builder({ sectionId, area }: Props) {
               </div>
             ) : (
               <div class="steps" key={`${currentStage.id}-${round}`}>
-                {currentStage.steps.map((step) => {
-                  const pick = auto.picks.find((p) => p.stepId === step.id);
-                  const option = pick && step.options?.find((o) => o.id === pick.optionId);
-                  return (
-                    <StepView
-                      key={`${step.id}-${round}`}
-                      step={step}
-                      index={area.steps.filter((s) => isStepVisible(s, advanced, area, full)).indexOf(step)}
-                      value={selections[step.id]}
-                      selections={selections}
-                      onChange={(v) => update(step.id, v)}
-                      onSetKey={setKey}
-                      auto={option}
-                      skipped={autopilot && skipAuto.includes(step.id)}
-                      onAuto={(a) => onAuto(step.id, a)}
-                    />
-                  );
-                })}
+                {currentStage.steps.map(stepView)}
               </div>
             )}
 
@@ -543,36 +679,10 @@ export default function Builder({ sectionId, area }: Props) {
             </h2>
             <Preview scene={scene} onTag={goStep} />
           </section>
-          <PromptPanel
-            adapter={adapter}
-            result={result}
-            hasContent={hasContent}
-            missing={missing}
-            warnings={warnings}
-            lang={lang}
-            creativity={creativity}
-            favorite={favorite}
-            onModel={changeModel}
-            onLang={setLang}
-            onCreativity={setCreativity}
-            onCopy={onCopy}
-            onOpen={onOpen}
-            onFavorite={() => setFavorite(toggleFavorite(entry()))}
-            canReset={hasSelections}
-            onReset={reset}
-          />
+          {promptPanel}
         </div>
 
-        {toast && (
-          <div class="toast" role="status">
-            <span>{toast.text}</span>
-            {toast.undo && (
-              <button type="button" class="btn btn-sm" onClick={restore}>
-                {t.builder.undo}
-              </button>
-            )}
-          </div>
-        )}
+        {toastView}
       </div>
     </DemoContext.Provider>
   );

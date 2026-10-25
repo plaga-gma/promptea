@@ -1,4 +1,4 @@
-import type { AssistantData, Preset, Stage } from '../../../engine/types';
+import type { AssistantData, Preset, Stage, StudioZone } from '../../../engine/types';
 import { PALETAS_KW, fromFamilies, q } from './_util';
 
 /** Niveles del constructor de Generación. */
@@ -9,6 +9,19 @@ export const ETAPAS_GENERACION: Stage[] = [
   { id: 'camara', title: { es: 'Cámara' }, icon: '🎥', steps: ['plano', 'composicion', 'angulo', 'lente', 'camara', 'tecnica'] },
   { id: 'detalles', title: { es: 'Detalles' }, icon: '🧩', steps: ['expresion', 'vestuario', 'epoca', 'clima', 'textura', 'material', 'evitar'] },
   { id: 'formato', title: { es: 'Formato' }, icon: '📐', steps: ['formato'] },
+];
+
+/** Zonas de la escena 3D: cada parte del set abre sus pasos. Entre todas cubren todos los pasos. */
+export const ZONAS_GENERACION: StudioZone[] = [
+  { id: 'protagonista', title: { es: 'Protagonista' }, icon: '🧑', hint: { es: 'Quién o qué, qué hace, su cara y su ropa' }, steps: ['sujeto', 'accion', 'expresion', 'vestuario'] },
+  { id: 'lugar', title: { es: 'Lugar' }, icon: '🏞️', hint: { es: 'Dónde está y en qué época' }, steps: ['entorno', 'epoca'] },
+  { id: 'luz', title: { es: 'Luz' }, icon: '☀️', hint: { es: 'De dónde viene la luz y cómo es' }, steps: ['iluminacion'] },
+  { id: 'clima', title: { es: 'Clima y ánimo' }, icon: '🌦️', hint: { es: 'El tiempo y la sensación de la escena' }, steps: ['clima', 'atmosfera'] },
+  { id: 'estilo', title: { es: 'Estilo' }, icon: '🖌️', hint: { es: 'Foto, dibujo, 3D… y su terminación' }, steps: ['medio', 'estilo', 'textura', 'material'] },
+  { id: 'color', title: { es: 'Colores' }, icon: '🎨', hint: { es: 'La paleta de la imagen' }, steps: ['color'] },
+  { id: 'camara', title: { es: 'Cámara' }, icon: '🎥', hint: { es: 'Qué tan cerca, desde dónde y con qué lente' }, steps: ['plano', 'angulo', 'composicion', 'lente', 'camara', 'tecnica'] },
+  { id: 'revelado', title: { es: 'Revelado' }, icon: '🎞️', hint: { es: 'Filtro final y lo que no querés ver' }, steps: ['filtro', 'evitar'] },
+  { id: 'formato', title: { es: 'Formato' }, icon: '📐', hint: { es: 'La forma del cuadro según dónde lo uses' }, steps: ['formato'] },
 ];
 
 /** Recetas: puntos de partida que completan varios pasos de un toque. */

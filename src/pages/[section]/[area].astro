@@ -23,13 +23,13 @@ const breadcrumbs = {
 ---
 
 <Base title={area.seo.title} description={area.seo.description} jsonLd={[breadcrumbs]}>
-  <div class="container">
+  <div class={`container ${area.studio ? 'has-studio' : ''}`}>
     <nav class="crumbs small muted" aria-label="Ubicación">
       <a href={url('/')}>Inicio</a> / <a href={url(`/${section.id}/`)}>{section.title.es}</a> / <span>{area.title.es}</span>
     </nav>
     <header class="head">
       <h1>{area.title.es}</h1>
-      <p class="muted">{area.description.es}</p>
+      <p class="muted">{area.studio ? area.tagline.es : area.description.es}</p>
     </header>
     <Builder client:load sectionId={section.id} area={area} />
   </div>
@@ -53,5 +53,33 @@ const breadcrumbs = {
   .head p {
     max-width: 70ch;
     margin: 0;
+  }
+  /* Con escena 3D: título en una línea, para que el set entre entero en la pantalla. */
+  .has-studio {
+    --st-off: 52px;
+    max-width: max(var(--max), 1480px);
+  }
+  .has-studio .crumbs {
+    display: none;
+  }
+  .has-studio .head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    height: 42px;
+    margin: 0;
+    padding-top: 10px;
+    overflow: hidden;
+  }
+  .has-studio .head h1 {
+    flex-shrink: 0;
+    font-size: 1.3rem;
+    margin: 0;
+  }
+  .has-studio .head p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
   }
 </style>

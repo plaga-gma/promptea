@@ -28,7 +28,8 @@ promptea/
 │   │                                  detalles.ts (subopciones), extra.ts (opciones del rediseño)
 │   ├── components/
 │   │   ├── builder/               Constructor (Preact): Builder, StepView, PromptPanel, Game (mapa, poder, idea, recetas, logros)
-│   │   ├── preview/               Vista previa: scene.ts (elecciones → escena) y Preview.tsx (la dibuja)
+│   │   ├── preview/               Vista previa: scene.ts (elecciones → escena), Preview.tsx (la dibuja), Backdrop.tsx (siluetas del fondo)
+│   │   ├── studio/                Escena 3D: Studio.tsx (el set, los marcadores y el panel) y studio.css
 │   │   ├── demos/                 Demos visuales: Demo.tsx, esquemas SVG, filtros SVG, fotos de muestra
 │   │   └── *.astro                Header, Footer, Logo, AreaCard
 │   ├── i18n/es.ts                 Textos de la interfaz
@@ -133,6 +134,10 @@ En `src/sections/imagenes/asistente/<area>.ts`: `stages` (cada paso en un solo n
 
 ### Vista previa
 `buildScene` (`src/components/preview/scene.ts`) es una función pura: se prueba sin navegador. Para que la vista previa reconozca un sujeto o un lugar nuevo, sumar la palabra (sin tildes, en singular) a `SUBJECT_GLYPHS` o `PLACES` en `glyphs.ts`. Las posiciones van en % y los tamaños en `cqh` (alto del cuadro), así escala igual en la columna y en la barra del celular.
+
+### Escena 3D
+
+Un área con `studio` (lista de `StudioZone`: id, título, ícono, frase y pasos) se arma como un set en una sola pantalla (`src/components/studio/Studio.tsx`). El constructor (`Builder.tsx`) sigue teniendo todo el estado; le pasa a `Studio` las zonas ya calculadas (pasos a la vista, cuántos tienen algo, lo elegido en pocas palabras) y una función que dibuja cada paso con el mismo `StepView` de siempre. El set usa CSS 3D: el escenario (`.st-stage`) da la perspectiva en `cqh`; el mundo (`.st-world`) gira; cada cosa se para en el piso con `translateZ` (más negativo = más lejos). Las cajas 3D no reciben toques (`pointer-events: none`), solo los marcadores. Para sumar una zona: agregarla a `ZONAS_GENERACION` (un test exige que las zonas cubran todos los pasos una sola vez) y, si tiene un objeto propio en el set, dibujarlo en `Stage` con su `Pin`.
 
 ### Traducir la web
 Los textos de interfaz están en `src/i18n/es.ts`; el catálogo usa `{ es, en? }`. Para traducir: crear `en.ts`, completar los `en` del catálogo y agregar rutas por idioma (Astro i18n routing). Los prompts ya están en inglés.

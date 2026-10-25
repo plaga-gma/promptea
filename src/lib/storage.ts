@@ -87,6 +87,8 @@ export interface Prefs {
   autopilot: boolean;
   /** Suma el bloque de calidad: el prompt largo y óptimo. */
   optimal: boolean;
+  /** Arma el pedido tocando la escena 3D (si el área la tiene) en vez de ir por niveles. */
+  studio: boolean;
 }
 
 export const getPrefs = (): Prefs => ({
@@ -95,6 +97,7 @@ export const getPrefs = (): Prefs => ({
   samplePhoto: 'retrato',
   autopilot: true,
   optimal: true,
+  studio: true,
   ...read<Partial<Prefs>>(KEYS.prefs, {}),
 });
 export const setPrefs = (p: Partial<Prefs>) => write(KEYS.prefs, { ...getPrefs(), ...p });

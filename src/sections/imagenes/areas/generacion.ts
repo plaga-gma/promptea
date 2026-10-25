@@ -15,7 +15,7 @@ import {
 } from '../library/detalles';
 import { ESTILOS, ESTILOS_GROUPS, MEDIOS, MEDIOS_GROUPS } from '../library/estilos';
 import { TECNICAS, VESTUARIO } from '../library/extra';
-import { ASISTENTE_GENERACION, ETAPAS_GENERACION, RECETAS_GENERACION } from '../asistente/generacion';
+import { ASISTENTE_GENERACION, ETAPAS_GENERACION, RECETAS_GENERACION, ZONAS_GENERACION } from '../asistente/generacion';
 import { FILTROS, FILTROS_GROUPS } from '../library/edicion';
 import {
   CAMARAS,
@@ -295,6 +295,7 @@ export const generacion: Area = {
     },
   ],
   stages: ETAPAS_GENERACION,
+  studio: ZONAS_GENERACION,
   presets: RECETAS_GENERACION,
   assistant: ASISTENTE_GENERACION,
 };
