@@ -7,7 +7,7 @@ import { DEFAULT_LOOK, DemoContext, samplePhoto } from './photos';
 
 /** Carga una fuente de Google Fonts solo cuando la tarjeta entra en pantalla, y solo con las letras de la muestra. */
 const loadedFonts = new Set<string>();
-function useGoogleFont(family: string, weight: number | undefined, text: string, enabled: boolean) {
+export function useGoogleFont(family: string, weight: number | undefined, text: string, enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
     const key = `${family}:${weight ?? 400}`;

@@ -36,6 +36,7 @@ export const stableDiffusion: ModelAdapter = {
       ...tags(spec, 'texture', lang),
       ...tags(spec, 'typography', lang),
       ...spec.copy.map((c) => `text "${c.value}"`),
+      ...tags(spec, 'quality', lang),
       ...tags(spec, 'background', lang),
       ...tags(spec, 'preserve', lang),
       lang === 'en' ? 'highly detailed' : 'muy detallado',

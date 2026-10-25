@@ -1,8 +1,9 @@
 import type { Option, Step } from '../../../engine/types';
-import { img, o } from './_helpers';
+import { img, mergeGroups, o } from './_helpers';
+import { ESTILOS_EXTRA, ESTILOS_EXTRA_GROUPS, MEDIOS_EXTRA } from './extra';
 
 /** Tipo de imagen (medio). Primer bloque del prompt de generación. */
-export const MEDIOS: Option[] = [
+const MEDIOS_BASE: Option[] = [
   o('foto', 'Fotografía', 'a {d:tipo} photograph', 'una fotografía {d:tipo}', {
     hint: 'Imagen realista, como sacada con una cámara.',
     demo: img('Fotografía de ejemplo', ['#5b6b7a', '#d9c7a7']),
@@ -38,11 +39,20 @@ export const MEDIOS: Option[] = [
   }),
 ];
 
+export const MEDIOS: Option[] = [...MEDIOS_BASE, ...MEDIOS_EXTRA];
+
+export const MEDIOS_GROUPS: Step['groups'] = [
+  { id: 'realista', label: { es: 'Foto y volumen' }, optionIds: ['foto', 'render3d', 'escultura', 'figura', 'miniatura-mundo'] },
+  { id: 'arte', label: { es: 'Arte e ilustración' }, optionIds: ['ilustracion', 'pintura', 'dibujo', 'vectorial', 'arte-conceptual', 'collage'] },
+  { id: 'graficos', label: { es: 'Stickers e íconos' }, optionIds: ['sticker-ilus', 'icono3d', 'emoji'] },
+  { id: 'historias', label: { es: 'Historias y personajes' }, optionIds: ['pagina-comic', 'hoja-personaje', 'storyboard', 'mapa-ilustrado'] },
+];
+
 const S = (id: string, label: string, en: string, es: string, hint: string, colors: string[], extra = {}) =>
   o(id, label, en, es, { hint, demo: img(label, colors), ...extra });
 
 /** Estilos visuales (técnicas, movimientos y estéticas). Ver docs/03-diseno-grafico.md §7. */
-export const ESTILOS: Option[] = [
+const ESTILOS_BASE: Option[] = [
   // Fotografía
   S('cinematografico', 'Cinematográfico', 'cinematic film still, anamorphic look, dramatic color grading', 'fotograma cinematográfico, look anamórfico, gradación de color dramática', 'Como un cuadro de una película.', ['#0f3d3e', '#e07a3f'], { meta: { literal: true } }),
   S('editorial', 'Editorial de moda', 'high-fashion editorial photography, polished and styled', 'fotografía editorial de moda, pulida y producida', 'Fotos de revista: poses cuidadas y producción impecable.', ['#111111', '#c9a227'], { meta: { literal: true } }),
@@ -132,7 +142,9 @@ export const ESTILOS: Option[] = [
   S('diorama', 'Diorama en miniatura', 'handmade miniature diorama, tiny detailed scale model, tilt-shift look', 'diorama en miniatura hecho a mano, maqueta diminuta y detallada, look tilt-shift', 'Una maqueta pequeña y detallada.', ['#90be6d', '#f9c74f']),
 ];
 
-export const ESTILOS_GROUPS: Step['groups'] = [
+export const ESTILOS: Option[] = [...ESTILOS_BASE, ...ESTILOS_EXTRA];
+
+const ESTILOS_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'foto', label: { es: 'Fotografía' }, optionIds: ['cinematografico', 'editorial', 'documental', 'producto', 'analogica', 'polaroid', 'fotorrealista', 'noir-foto', 'retrato-estudio', 'gastronomica', 'arquitectura'] },
   { id: 'pintura', label: { es: 'Pintura y dibujo' }, optionIds: ['acuarela', 'oleo', 'acrilico', 'gouache', 'tinta', 'sumie', 'lapiz', 'lapices-color', 'boceto', 'carbonilla', 'pastel'] },
   { id: 'movimientos', label: { es: 'Movimientos artísticos' }, optionIds: ['renacimiento', 'barroco', 'impresionismo', 'expresionismo', 'cubismo', 'surrealista', 'artnouveau', 'artdeco', 'popart'] },
@@ -141,3 +153,5 @@ export const ESTILOS_GROUPS: Step['groups'] = [
   { id: 'manual', label: { es: 'Manualidades y materiales' }, optionIds: ['papel', 'origami', 'clay', 'bordado', 'tejido', 'mosaico', 'vitral', 'diorama'] },
   { id: 'esteticas', label: { es: 'Estéticas' }, optionIds: ['minimalista', 'maximalista', 'cyberpunk', 'steampunk', 'solarpunk', 'retrofuturismo', 'vaporwave', 'synthwave', 'fantasia-epica', 'fantasia-oscura', 'postapocaliptico', 'terror', 'cottagecore', 'y2k', 'glitch', 'doble-exposicion'] },
 ];
+
+export const ESTILOS_GROUPS: Step['groups'] = mergeGroups(ESTILOS_GROUPS_BASE, ESTILOS_EXTRA_GROUPS, { tendencias: 'Tendencias 2026' });

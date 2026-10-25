@@ -4,6 +4,9 @@ import { DETALLE_FUERZA_ESTILO, DETALLES_ESTILOS, DETALLES_FILTROS, DETALLES_LUZ
 import { DANOS, DUOTONOS, EPOCAS, FILTROS, FILTROS_GROUPS, INTENSIDADES, OPERACIONES, POSTER_TRAP, PRESERVAR } from '../library/edicion';
 import { ESTILOS, ESTILOS_GROUPS } from '../library/estilos';
 import { ILUMINACION, ILUMINACION_GROUPS } from '../library/foto';
+import { mergeGroups } from '../library/_helpers';
+import { OPERACIONES_EXTRA_GROUPS } from '../library/extra';
+import { ASISTENTE_EDICION, ETAPAS_EDICION, RECETAS_EDICION } from '../asistente/edicion';
 
 export const edicion: Area = {
   id: 'edicion',
@@ -29,14 +32,18 @@ export const edicion: Area = {
       join: 'sentences',
       required: true,
       options: withDetails(OPERACIONES, DETALLES_OPERACIONES),
-      groups: [
+      groups: mergeGroups(
+        [
         { id: 'objetos', label: { es: 'Objetos y fondo' }, optionIds: ['quitar-objeto', 'quitar-fondo', 'cambiar-fondo', 'desenfocar-fondo', 'cambiar-cielo', 'agregar', 'cambiar', 'mover', 'montaje', 'texto'] },
         { id: 'personas', label: { es: 'Personas' }, optionIds: ['retoque', 'retrato-pro', 'ropa', 'peinado', 'expresion', 'edad'] },
         { id: 'look', label: { es: 'Estilo y luz' }, optionIds: ['estilo', 'filtro', 'reiluminar', 'estacion', 'angulo-camara'] },
         { id: 'efectos', label: { es: 'Efectos' }, optionIds: ['duotono', 'color-selectivo', 'envejecer', 'poster-trap', 'doble-exposicion', 'neon', 'dispersion', 'sticker'] },
         { id: 'arreglar', label: { es: 'Arreglar y mejorar' }, optionIds: ['mejorar', 'ampliar', 'desmovida', 'exposicion', 'restaurar', 'colorear', 'enderezar', 'expandir'] },
         { id: 'producto', label: { es: 'Producto y dibujo' }, optionIds: ['producto-pro', 'boceto-real'] },
-      ],
+        ],
+        OPERACIONES_EXTRA_GROUPS,
+        { tendencias: 'Tendencias virales', ambientes: 'Casas y ambientes' },
+      ),
     },
     {
       id: 'duo-colores',
@@ -186,4 +193,7 @@ export const edicion: Area = {
       options: EVITAR.filter((o) => ['sin-deformaciones', 'sin-borroso', 'sin-saturar', 'sin-marca-agua'].includes(o.id)),
     },
   ],
+  stages: ETAPAS_EDICION,
+  presets: RECETAS_EDICION,
+  assistant: ASISTENTE_EDICION,
 };

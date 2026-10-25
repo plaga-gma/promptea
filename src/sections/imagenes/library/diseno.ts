@@ -1,5 +1,15 @@
 import type { Demo, Option, Step } from '../../../engine/types';
-import { img, o } from './_helpers';
+import { img, mergeGroups, o } from './_helpers';
+import {
+  ELEMENTOS_EXTRA,
+  ESTILOS_DISENO_EXTRA,
+  ESTILOS_DISENO_EXTRA_GROUPS,
+  LAYOUTS_EXTRA,
+  PERSONALIDADES_EXTRA,
+  PIEZAS_EXTRA,
+  PRESENTACIONES_EXTRA,
+  TIPOGRAFIAS_EXTRA,
+} from './extra';
 
 const font = (family: string, extra: Partial<Extract<Demo, { kind: 'font' }>> = {}): Demo => ({ kind: 'font', family, ...extra });
 const diagram = (name: string): Demo => ({ kind: 'diagram', name });
@@ -8,7 +18,7 @@ const diagram = (name: string): Demo => ({ kind: 'diagram', name });
  * Tipografías por familia. La demo carga la fuente real desde Google Fonts (solo las letras de la muestra).
  * El prompt describe el estilo y nombra una fuente parecida: describir es más fiable que nombrar.
  */
-export const TIPOGRAFIAS: Option[] = [
+const TIPOGRAFIAS_BASE: Option[] = [
   o('serif-clasica', 'Serif clásica', 'classic elegant serif typography (like Garamond)', 'tipografía serif clásica y elegante (como Garamond)', { hint: 'Tradición y confianza: libros, editoriales, abogados.', demo: font('EB Garamond') }),
   o('didona', 'Serif de alto contraste', 'high-contrast didone serif typography (like Playfair Display)', 'tipografía serif didona de alto contraste (como Playfair Display)', { hint: 'Moda y lujo: trazos finos y gruesos.', demo: font('Playfair Display', { weight: 700 }) }),
   o('slab', 'Slab serif', 'sturdy slab serif typography (like Roboto Slab)', 'tipografía slab serif robusta (como Roboto Slab)', { hint: 'Robusta e industrial, con remates rectangulares.', demo: font('Roboto Slab', { weight: 700 }) }),
@@ -38,7 +48,7 @@ export const TIPOGRAFIAS: Option[] = [
 ];
 
 /** Piezas de diseño: definen el uso declarado y la proporción sugerida. Ver docs/03-diseno-grafico.md §10. */
-export const PIEZAS: Option[] = [
+const PIEZAS_BASE: Option[] = [
   o('logo', 'Logo', 'a simple, flat professional logo in scalable vector style', 'un logo profesional simple y plano en estilo vectorial escalable', { hint: 'La firma visual de una marca.', demo: diagram('piece-logo'), meta: { ratio: [1, 1], purpose: 'brand logo', avoid: ['mockup', 'photorealistic details'], allow: ['logo'] } }),
   o('icono', 'Ícono / app', 'an app icon design with a single bold symbol', 'un diseño de ícono de app', { hint: 'Un símbolo simple que se entienda en tamaño chico.', demo: diagram('piece-icon'), meta: { ratio: [1, 1], purpose: 'app icon' } }),
   o('post', 'Post para redes', 'a social media post design', 'un diseño de post para redes sociales', { hint: 'Un mensaje claro que frene el scroll.', demo: diagram('piece-post'), meta: { ratio: [4, 5], purpose: 'Instagram feed post' } }),
@@ -66,7 +76,7 @@ export const PIEZAS: Option[] = [
 const D = (id: string, label: string, en: string, es: string, hint: string, colors: string[], conflicts?: string[]) =>
   o(id, label, en, es, { hint, demo: img(label, colors), ...(conflicts ? { conflicts } : {}) });
 
-export const ESTILOS_DISENO: Option[] = [
+const ESTILOS_DISENO_BASE: Option[] = [
   D('d-minimal', 'Minimalista', 'minimalist graphic design, clean layout, generous white space', 'diseño gráfico minimalista, diagramación limpia, mucho espacio en blanco', 'Pocos elementos, mucho aire: claro y elegante.', ['#ffffff', '#111111'], ['d-maximal', 'd-memphis']),
   D('d-suizo', 'Suizo', 'Swiss International Typographic Style, strict grid, bold sans-serif', 'estilo tipográfico internacional suizo, retícula estricta, sans serif gruesa', 'Orden, retícula y tipografía protagonista.', ['#e30613', '#f2f2f2']),
   D('d-bauhaus', 'Bauhaus', 'Bauhaus design, primary colors, basic geometric shapes', 'diseño Bauhaus, colores primarios, formas geométricas básicas', 'Círculos, cuadrados y triángulos en colores primarios.', ['#e63946', '#1d4ed8']),
@@ -107,7 +117,7 @@ export const TIPOS_LOGO: Option[] = [
 ];
 
 /** Diagramación (layout). */
-export const LAYOUTS: Option[] = [
+const LAYOUTS_BASE: Option[] = [
   o('l-centrado', 'Centrado', 'centered layout with a clear visual hierarchy', 'diagramación centrada con jerarquía visual clara', { hint: 'Todo al centro: simple y equilibrado.', demo: diagram('layout-center') }),
   o('l-grilla', 'Retícula', 'structured grid layout', 'diagramación en retícula ordenada', { hint: 'Columnas y bloques alineados: orden y claridad.', demo: diagram('layout-grid') }),
   o('l-asimetrico', 'Asimétrico', 'dynamic asymmetric layout', 'diagramación asimétrica dinámica', { hint: 'Moderno y con movimiento.', demo: diagram('layout-asym') }),
@@ -118,7 +128,7 @@ export const LAYOUTS: Option[] = [
 ];
 
 /** Elementos gráficos. */
-export const ELEMENTOS: Option[] = [
+const ELEMENTOS_BASE: Option[] = [
   o('e-formas', 'Formas geométricas', 'bold geometric shapes', 'formas geométricas marcadas', { demo: diagram('el-shapes') }),
   o('e-organicas', 'Formas orgánicas', 'soft organic blob shapes', 'formas orgánicas suaves', { demo: diagram('el-blobs') }),
   o('e-ilustracion', 'Ilustración', 'a central illustration', 'una ilustración central', { demo: diagram('el-illustration') }),
@@ -142,7 +152,7 @@ export const FONDOS: Option[] = [
 
 /** Personalidad de marca: cómo tiene que "sonar" la pieza. */
 const pg = (colors: string[], glyph: string): Demo => ({ kind: 'gradient', colors, glyph });
-export const PERSONALIDADES: Option[] = [
+const PERSONALIDADES_BASE: Option[] = [
   o('confiable', 'Confiable', 'trustworthy', 'confiable', { hint: 'Bancos, salud, servicios profesionales.', demo: pg(['#0a2342', '#2c6e9b'], '🤝') }),
   o('divertida', 'Divertida', 'fun, playful', 'divertida, juguetona', { hint: 'Juguetes, snacks, eventos.', demo: pg(['#ffbe0b', '#ff006e'], '🎉') }),
   o('elegante', 'Elegante', 'elegant, refined', 'elegante, refinada', { hint: 'Moda, joyas, vinos.', demo: pg(['#111111', '#c9a227'], '💎') }),
@@ -157,7 +167,7 @@ export const PERSONALIDADES: Option[] = [
 
 /** Cómo se presenta la pieza terminada: sola o en un mockup realista. */
 const MOCKUP = ['mockup', 'photorealistic details'];
-export const PRESENTACIONES: Option[] = [
+const PRESENTACIONES_BASE: Option[] = [
   o('m-plano', 'Solo el diseño', 'shown flat and straight-on, artwork only, filling the frame', 'mostrado plano y de frente, solo el diseño ocupando todo el cuadro', { hint: 'Recomendado si lo vas a usar o imprimir.', demo: diagram('mock-flat'), meta: { avoid: ['mockup'] } }),
   o('m-mesa', 'Impreso sobre una mesa', 'presented as a realistic printed mockup lying on a table, soft natural light', 'presentado como un mockup realista impreso, apoyado sobre una mesa, con luz natural suave', { demo: diagram('mock-table'), meta: { allow: MOCKUP } }),
   o('m-pared', 'Colgado en una pared', 'presented as a realistic framed mockup hanging on a wall in a stylish room', 'presentado como un mockup realista enmarcado y colgado en la pared de un ambiente con estilo', { demo: diagram('mock-wall'), meta: { allow: MOCKUP } }),
@@ -168,11 +178,48 @@ export const PRESENTACIONES: Option[] = [
   o('m-calle', 'En la calle', 'presented as a realistic mockup on a street billboard', 'presentado como un mockup realista en un cartel de la calle', { demo: diagram('mock-street'), meta: { allow: MOCKUP } }),
 ];
 
+export const TIPOGRAFIAS: Option[] = [...TIPOGRAFIAS_BASE, ...TIPOGRAFIAS_EXTRA];
+export const PIEZAS: Option[] = [...PIEZAS_BASE, ...PIEZAS_EXTRA];
+export const ESTILOS_DISENO: Option[] = [...ESTILOS_DISENO_BASE, ...ESTILOS_DISENO_EXTRA];
+export const LAYOUTS: Option[] = [...LAYOUTS_BASE, ...LAYOUTS_EXTRA];
+export const ELEMENTOS: Option[] = [...ELEMENTOS_BASE, ...ELEMENTOS_EXTRA];
+export const PERSONALIDADES: Option[] = [...PERSONALIDADES_BASE, ...PERSONALIDADES_EXTRA];
+export const PRESENTACIONES: Option[] = [...PRESENTACIONES_BASE, ...PRESENTACIONES_EXTRA];
+
 /** Categorías de los estilos de diseño. */
-export const ESTILOS_DISENO_GROUPS: Step['groups'] = [
+const ESTILOS_DISENO_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'clasicos', label: { es: 'Clásicos del diseño' }, optionIds: ['d-suizo', 'd-bauhaus', 'd-constructivista', 'd-editorial', 'd-tipografico', 'd-psicodelico'] },
   { id: 'limpios', label: { es: 'Minimal y limpios' }, optionIds: ['d-minimal', 'd-escandinavo', 'd-japones', 'd-corporativo', 'd-lujo'] },
   { id: 'retro', label: { es: 'Retro' }, optionIds: ['d-retro', 'd-memphis', 'd-y2k', 'd-grunge'] },
   { id: 'actuales', label: { es: 'Actuales' }, optionIds: ['d-brutalista', 'd-neobrutalista', 'd-glass', 'd-aurora', 'd-acid'] },
   { id: 'calidos', label: { es: 'Cálidos y lúdicos' }, optionIds: ['d-organico', 'd-boho', 'd-kawaii', 'd-doodle', 'd-infantil', 'd-maximal'] },
+];
+
+export const ESTILOS_DISENO_GROUPS: Step['groups'] = mergeGroups(ESTILOS_DISENO_GROUPS_BASE, ESTILOS_DISENO_EXTRA_GROUPS);
+
+export const ELEMENTOS_GROUPS: Step['groups'] = [
+  { id: 'formas', label: { es: 'Formas y fondos' }, optionIds: ['e-formas', 'e-organicas', 'e-patron', 'e-degradado', 'e-3d'] },
+  { id: 'imagenes', label: { es: 'Imágenes' }, optionIds: ['e-ilustracion', 'e-foto', 'e-iconos'] },
+  { id: 'decoracion', label: { es: 'Decoración' }, optionIds: ['e-lineas', 'e-marco', 'e-destellos', 'e-flechas'] },
+  { id: 'hecho-a-mano', label: { es: 'Hecho a mano' }, optionIds: ['e-stickers', 'e-garabatos', 'e-cinta', 'e-sellos'] },
+];
+
+export const PRESENTACIONES_GROUPS: Step['groups'] = [
+  { id: 'plano', label: { es: 'Solo el diseño' }, optionIds: ['m-plano'] },
+  { id: 'impreso', label: { es: 'Impreso' }, optionIds: ['m-mesa', 'm-pared', 'm-mano', 'm-revista'] },
+  { id: 'pantallas', label: { es: 'Pantallas' }, optionIds: ['m-celular', 'm-laptop'] },
+  { id: 'productos', label: { es: 'Productos' }, optionIds: ['m-remera', 'm-packaging', 'm-taza', 'm-bolsa'] },
+  { id: 'calle', label: { es: 'En la calle' }, optionIds: ['m-calle', 'm-vidriera', 'm-valla'] },
+];
+
+export const PERSONALIDADES_GROUPS: Step['groups'] = [
+  { id: 'serias', label: { es: 'Seria y confiable' }, optionIds: ['confiable', 'seria', 'elegante', 'minimal-marca'] },
+  { id: 'calidas', label: { es: 'Cálida y natural' }, optionIds: ['cercana', 'natural', 'artesanal', 'nostalgica-marca'] },
+  { id: 'energicas', label: { es: 'Con energía' }, optionIds: ['divertida', 'audaz', 'juvenil', 'rebelde-marca', 'magica-marca', 'innovadora'] },
+];
+
+export const LAYOUTS_GROUPS: Step['groups'] = [
+  { id: 'ordenadas', label: { es: 'Ordenadas' }, optionIds: ['l-centrado', 'l-grilla', 'l-bento', 'l-marco'] },
+  { id: 'dinamicas', label: { es: 'Dinámicas' }, optionIds: ['l-asimetrico', 'l-dividido', 'l-z', 'l-collage'] },
+  { id: 'impacto', label: { es: 'De impacto' }, optionIds: ['l-tipografico', 'l-imagen-completa', 'l-espacio-texto'] },
 ];

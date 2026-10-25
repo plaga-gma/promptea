@@ -7,6 +7,8 @@ interface Props {
   area: Area;
 }
 const { sectionId, area } = Astro.props;
+const optionCount = area.steps.reduce((n, s) => n + (s.options?.length ?? 0), 0);
+const emoji: Record<string, string> = { generacion: '🪄', edicion: '🪛', diseno: '🎨' };
 const icons: Record<string, string> = {
   generacion: '<path d="M8 36l10-14 8 9 6-6 10 11z" fill="currentColor"/><circle cx="34" cy="14" r="5" fill="currentColor"/>',
   edicion: '<path d="M10 34l18-18 6 6-18 18H10z" fill="currentColor"/><path d="M31 13l4-4 6 6-4 4z" fill="currentColor"/>',
@@ -18,13 +20,30 @@ const icons: Record<string, string> = {
   <span class={`icon icon-${area.id}`}>
     <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true" set:html={icons[area.id] ?? icons.generacion} />
   </span>
+  <span class="big" aria-hidden="true">{emoji[area.id] ?? '✨'}</span>
   <h3>{area.title.es}</h3>
   <p class="muted">{area.tagline.es}</p>
-  <span class="go">Empezar →</span>
+  <ul class="stats">
+    <li><b>{optionCount}</b> opciones</li>
+    {area.stages && <li><b>{area.stages.length + 1}</b> niveles</li>}
+    {area.presets && <li><b>{area.presets.length}</b> recetas</li>}
+  </ul>
+  {
+    area.presets && (
+      <span class="presets" aria-hidden="true">
+        {area.presets.slice(0, 6).map((p) => (
+          <i style={`background: linear-gradient(135deg, ${p.colors[0]}, ${p.colors[1] ?? p.colors[0]})`}>{p.icon}</i>
+        ))}
+      </span>
+    )
+  }
+  <span class="go">Jugar →</span>
 </a>
 
 <style>
   .area-card {
+    position: relative;
+    overflow: hidden;
     display: grid;
     gap: 0.4rem;
     padding: 1.4rem;
@@ -57,6 +76,53 @@ const icons: Record<string, string> = {
   }
   .icon-diseno {
     background: linear-gradient(135deg, var(--accent), #ffb347);
+  }
+  .big {
+    position: absolute;
+    right: -0.6rem;
+    top: -0.8rem;
+    font-size: 5.5rem;
+    opacity: 0.16;
+    transform: rotate(12deg);
+    transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.3s;
+    pointer-events: none;
+  }
+  .area-card:hover .big {
+    opacity: 0.32;
+    transform: rotate(-4deg) scale(1.08);
+  }
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8rem;
+  }
+  .stats li {
+    padding: 0.15em 0.6em;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--muted);
+  }
+  .stats b {
+    color: var(--text);
+  }
+  .presets {
+    display: flex;
+    margin-top: 0.3rem;
+  }
+  .presets i {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    margin-right: -6px;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    font-size: 1rem;
+    font-style: normal;
   }
   .go {
     margin-top: 0.4rem;

@@ -1,0 +1,801 @@
+/* Constructor en modo juego: mapa de niveles, poder del prompt, asistente y vista previa. */
+
+.builder.game {
+  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-areas:
+    'hud hud'
+    'play side';
+}
+
+.game > .hud {
+  grid-area: hud;
+}
+
+.game > .play {
+  grid-area: play;
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.game > .play > *,
+.game > .hud,
+.recipes {
+  min-width: 0;
+}
+
+.game > .side {
+  grid-area: side;
+  min-width: 0;
+  position: sticky;
+  top: 72px;
+  display: grid;
+  gap: 1rem;
+  max-height: calc(100vh - 86px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.game .side .panel {
+  position: static;
+  max-height: none;
+  overflow: visible;
+}
+
+.game > .mini {
+  display: none;
+}
+
+/* HUD */
+.hud {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+}
+
+.hud-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.2rem;
+}
+
+.hud-row .power {
+  flex: 1 1 260px;
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem 0.3rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.84rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch input {
+  appearance: none;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.switch input::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%);
+  transition: transform 0.2s;
+}
+
+.switch input:checked {
+  background: var(--primary);
+}
+
+.switch input:checked::after {
+  transform: translateX(14px);
+}
+
+.switch input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Mapa de niveles */
+.map {
+  display: flex;
+  gap: 0;
+  margin: 0;
+  padding: 0.2rem 0 0.3rem;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.map::-webkit-scrollbar {
+  display: none;
+}
+
+.map-node {
+  position: relative;
+  flex: 1 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* El camino entre niveles */
+.map-node + .map-node::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  right: 50%;
+  width: 100%;
+  height: 4px;
+  margin-right: 24px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(90deg, var(--border) 0 8px, transparent 8px 13px);
+}
+
+.map-node.some::before,
+.map-node.full::before {
+  background: var(--primary);
+}
+
+.map-node button {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  min-width: 78px;
+  padding: 0 0.3rem;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.map-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  background: var(--surface);
+  font-size: 1.35rem;
+  transition:
+    transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1),
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.map-node.some .map-icon {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+}
+
+.map-node.full .map-icon {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.map-node button[aria-current='step'] .map-icon {
+  transform: scale(1.14);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 5px var(--primary-soft);
+}
+
+.map-node button:hover .map-icon {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.map-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.map-node button[aria-current='step'] .map-title {
+  color: var(--primary-strong);
+}
+
+.map-count {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+/* Poder del prompt */
+.power {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.power-level {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary-soft), color-mix(in srgb, var(--accent) 25%, var(--surface)));
+  font-size: 1.3rem;
+}
+
+.power.bump .power-level {
+  animation: power-bump 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes power-bump {
+  50% {
+    transform: scale(1.25) rotate(-8deg);
+  }
+}
+
+.power-main {
+  display: grid;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.power-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.power-label b {
+  font-variant-numeric: tabular-nums;
+  color: var(--primary-strong);
+}
+
+.power-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+
+.power-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.5s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.power-bar i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 45%), transparent);
+  animation: power-shine 2.4s ease-in-out infinite;
+}
+
+.power-bar .power-auto {
+  z-index: -1;
+  background: repeating-linear-gradient(45deg, var(--primary-soft) 0 5px, transparent 5px 10px);
+}
+
+@keyframes power-shine {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.power.compact .power-level {
+  width: 30px;
+  height: 30px;
+  font-size: 1rem;
+  border-radius: 9px;
+}
+
+.power.compact .power-bar {
+  height: 8px;
+}
+
+/* Contale tu idea */
+.idea {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 2px solid color-mix(in srgb, var(--primary) 30%, var(--border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary-soft) 70%, var(--surface)), var(--surface) 60%);
+}
+
+.idea-label {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.idea-bot {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--primary);
+  font-size: 1.3rem;
+  animation: bot-bob 3s ease-in-out infinite;
+}
+
+@keyframes bot-bob {
+  50% {
+    transform: translateY(-3px) rotate(-4deg);
+  }
+}
+
+.idea-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: stretch;
+}
+
+.idea textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.idea textarea:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.idea-actions {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.understood {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.understood .chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip.is-static {
+  cursor: default;
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  animation: pv-in 0.25s ease;
+}
+
+.chip.is-text {
+  font-style: italic;
+}
+
+.ai-offer {
+  margin: 0;
+  color: var(--muted);
+}
+
+.ai-offer.on {
+  color: var(--ok);
+}
+
+/* Recetas */
+.recipes-title {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.recipes-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(170px, 1fr);
+  gap: 0.7rem;
+  overflow-x: auto;
+  padding: 0.2rem 0.1rem 0.6rem;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+
+.recipe {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+  min-height: 132px;
+  padding: 0.8rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(140deg, var(--c1), var(--c2));
+  color: #fff;
+  text-align: left;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 45%);
+  cursor: pointer;
+  scroll-snap-align: start;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.recipe:hover {
+  transform: translateY(-3px) rotate(-1deg);
+}
+
+.recipe-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  text-shadow: none;
+}
+
+/* El coach */
+.coach {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  padding: 0.8rem 1rem;
+  border-left: 4px solid var(--accent);
+  box-shadow: none;
+}
+
+.coach p {
+  margin: 0 0 0.4rem;
+  font-size: 0.92rem;
+}
+
+.coach.done {
+  align-items: center;
+  border-left-color: var(--ok);
+}
+
+.coach.done p {
+  margin: 0;
+}
+
+.coach-bot {
+  font-size: 1.4rem;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-strong);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Nivel actual */
+.stage {
+  display: grid;
+  gap: 1rem;
+  scroll-margin-top: 80px;
+}
+
+.stage-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.stage-head h2 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+
+.stage-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  font-size: 1.7rem;
+  animation: pv-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.stage .steps {
+  animation: stage-in 0.3s ease;
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+.stage-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.final {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.1rem;
+}
+
+.final-prompt {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.final-prompt pre {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.final h3 {
+  margin: 0.4rem 0 0;
+  font-size: 1rem;
+}
+
+.final .pv-frame {
+  max-height: 56vh;
+}
+
+/* Logros */
+.badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badges li {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.3rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  color: var(--muted);
+}
+
+.badges li span:first-child {
+  font-size: 1.5rem;
+}
+
+.badges li.got {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: var(--primary-soft);
+  color: var(--text);
+  animation: pv-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+/* Lo que eligió el asistente en un paso */
+.auto-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.8rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--primary-soft) 60%, var(--surface));
+  font-size: 0.86rem;
+}
+
+.auto-note em {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.auto-note span {
+  flex: 1 1 200px;
+}
+
+.auto-note.off {
+  border-color: var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+/* Vista previa en la columna */
+.preview-card {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem;
+}
+
+.pv-head {
+  display: grid;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.pv-head .small {
+  font-weight: 400;
+}
+
+/* Papelitos */
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti i {
+  position: absolute;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  animation: confetti 1.5s cubic-bezier(0.2, 0.6, 0.4, 1) forwards;
+}
+
+@keyframes confetti {
+  to {
+    transform: translate(var(--dx), 105vh) rotate(var(--r));
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 960px) {
+  .builder.game {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'mini'
+      'hud'
+      'play'
+      'side';
+  }
+
+  /* En celular la vista previa chica queda fija arriba y el prompt es la hoja de abajo. */
+  .game > .mini {
+    grid-area: mini;
+    position: sticky;
+    top: var(--hdr, 60px);
+    z-index: 30;
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    height: 96px;
+    margin: 0 calc(var(--gutter) * -1);
+    padding: 0.5rem var(--gutter);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mini .pv {
+    height: 100%;
+    flex-shrink: 0;
+  }
+
+  .mini-info {
+    display: grid;
+    gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .game > .side {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .game .preview-card {
+    display: none;
+  }
+
+  .game .side .panel {
+    position: fixed;
+  }
+
+  .hud {
+    padding: 0.6rem 0.7rem;
+  }
+
+  /* El poder ya está en la barra chica de arriba. */
+  .hud .power {
+    display: none;
+  }
+
+  .stage,
+  .step {
+    scroll-margin-top: calc(var(--hdr, 60px) + 110px);
+  }
+
+  .map-node button {
+    min-width: 66px;
+  }
+
+  .idea-row {
+    flex-direction: column;
+  }
+
+  .idea-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stage-nav .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .toggles .switch span {
+    font-size: 0.78rem;
+  }
+
+  .stage-head h2 {
+    font-size: 1.25rem;
+  }
+
+  .stage-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game *,
+  .game *::before,
+  .game *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

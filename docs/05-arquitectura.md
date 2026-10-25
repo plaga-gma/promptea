@@ -16,23 +16,26 @@ promptea/
 │   │   ├── types.ts               Tipos: Section, Area, Step, Option, PromptSpec, ModelAdapter
 │   │   ├── build.ts               Elecciones → PromptSpec (especificación neutral)
 │   │   ├── color.ts               Armonías de color y contraste WCAG
+│   │   ├── assistant/             Asistente: entender ideas, completar, Poder del prompt, prompt óptimo
 │   │   └── adapters/              Un archivo por IA (generic, chatgpt, gemini, meta, midjourney…)
 │   ├── sections/
 │   │   ├── index.ts               Registro de secciones (las páginas salen de acá)
 │   │   └── imagenes/
 │   │       ├── section.ts         La sección y sus áreas
 │   │       ├── areas/             generacion.ts, edicion.ts, diseno.ts (pasos de cada área)
+│   │       ├── asistente/         Niveles, recetas y datos del asistente de cada área
 │   │       └── library/           Catálogo: estilos, luz, cámara, color, tipografía, diseño, edición,
-│   │                                  detalles.ts (subopciones de cada opción)
+│   │                                  detalles.ts (subopciones), extra.ts (opciones del rediseño)
 │   ├── components/
-│   │   ├── builder/               Constructor (Preact): Builder, StepView, PromptPanel
+│   │   ├── builder/               Constructor (Preact): Builder, StepView, PromptPanel, Game (mapa, poder, idea, recetas, logros)
+│   │   ├── preview/               Vista previa: scene.ts (elecciones → escena) y Preview.tsx (la dibuja)
 │   │   ├── demos/                 Demos visuales: Demo.tsx, esquemas SVG, filtros SVG, fotos de muestra
 │   │   └── *.astro                Header, Footer, Logo, AreaCard
 │   ├── i18n/es.ts                 Textos de la interfaz
-│   ├── lib/                       storage.ts (historial/favoritos), url.ts (base del sitio)
+│   ├── lib/                       storage.ts (historial/favoritos), url.ts (base del sitio), browser-ai.ts (traductor de Chrome)
 │   ├── layouts/Base.astro         HTML base + SEO (canonical, Open Graph, JSON-LD)
 │   └── pages/                     Rutas: /, /[section]/, /[section]/[area]/, /mis-prompts/, 404, robots.txt
-└── tests/engine.test.ts           Tests del motor y del catálogo
+└── tests/                         engine (motor y catálogo), assistant (asistente y recetas), preview (vista previa)
 ```
 
 ## Flujo de datos
@@ -50,6 +53,18 @@ adapter.format(spec, {lang, creativity})   src/engine/adapters/<ia>.ts
         ▼
 PromptPanel: copiar · abrir la IA · favoritos · historial
 ```
+
+Con el rediseño (T19 a T24) el constructor suma tres pasos alrededor de ese flujo:
+
+```
+idea escrita ──interpretIdea──► Selections del usuario
+                                   │ autofill (Asistente por detrás) → Selections completas
+                                   ├─► buildSpec → enhanceSpec (Prompt óptimo) → adapter.format
+                                   ├─► scorePrompt (Poder del prompt, próximo paso)
+                                   └─► buildScene → Preview (vista previa)
+```
+
+El asistente nunca cambia `selections`: calcula aparte lo que completaría (`auto.selections`) y el constructor lo mezcla al armar el prompt y la vista previa. Así "No, gracias" y apagar el asistente no dejan rastros.
 
 Los **roles** (`SegmentRole`) siguen la anatomía de un prompt de [01-ingenieria-de-prompts.md](01-ingenieria-de-prompts.md) §2 y se ordenan por prioridad (`ROLE_ORDER`). Cada adaptador decide cómo escribirlos: oraciones (Genérico, Gemini, FLUX, Meta), líneas etiquetadas (ChatGPT), etiquetas con pesos (Stable Diffusion) o texto + parámetros (Midjourney).
 
@@ -112,6 +127,12 @@ Crear `src/sections/imagenes/areas/mockups.ts` con sus pasos y sumarla a `areas`
 2. Registrarla en `src/sections/index.ts`.
 3. Si necesita un tipo de prompt nuevo, sumar un `AreaMode` y adaptadores para sus IAs (Sora, Veo, Kling…).
 La portada, el menú, las rutas y el sitemap se actualizan solos.
+
+### Niveles, recetas y asistente de un área
+En `src/sections/imagenes/asistente/<area>.ts`: `stages` (cada paso en un solo nivel: lo verifica un test), `presets` (recetas, con `selections` como las guarda el constructor) y `assistant` (palabras clave, familias, autocompletado, refuerzos, pesos, ideas). Ver [09-asistente-ia.md](09-asistente-ia.md).
+
+### Vista previa
+`buildScene` (`src/components/preview/scene.ts`) es una función pura: se prueba sin navegador. Para que la vista previa reconozca un sujeto o un lugar nuevo, sumar la palabra (sin tildes, en singular) a `SUBJECT_GLYPHS` o `PLACES` en `glyphs.ts`. Las posiciones van en % y los tamaños en `cqh` (alto del cuadro), así escala igual en la columna y en la barra del celular.
 
 ### Traducir la web
 Los textos de interfaz están en `src/i18n/es.ts`; el catálogo usa `{ es, en? }`. Para traducir: crear `en.ts`, completar los `en` del catálogo y agregar rutas por idioma (Astro i18n routing). Los prompts ya están en inglés.

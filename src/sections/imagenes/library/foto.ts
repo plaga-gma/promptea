@@ -1,12 +1,13 @@
 import type { Demo, Option, Step } from '../../../engine/types';
-import { BLUR, o } from './_helpers';
+import { BLUR, mergeGroups, o } from './_helpers';
+import { COMPOSICION_EXTRA, ILUMINACION_EXTRA } from './extra';
 
 const light = (bg: string, sphere: string, glow?: string): Demo => ({ kind: 'light', bg, sphere, ...(glow ? { glow } : {}) });
 const diagram = (name: string): Demo => ({ kind: 'diagram', name });
 const onPhoto = (css: string, overlay: Extract<Demo, { kind: 'filter' }>['overlay']): Demo => ({ kind: 'filter', css, overlay });
 
 /** Iluminación. La demo muestra una esfera iluminada con ese esquema. Ver docs/03-diseno-grafico.md §8. */
-export const ILUMINACION: Option[] = [
+const ILUMINACION_BASE: Option[] = [
   o('hora-dorada', 'Hora dorada', 'warm golden hour sunlight with long soft shadows', 'luz cálida de hora dorada con sombras largas y suaves', {
     hint: 'La luz del atardecer: cálida, suave y nostálgica.',
     demo: light('linear-gradient(180deg,#ffb36b,#ff7b54 60%,#6b3a2e)', 'radial-gradient(circle at 25% 35%,#fff1c9,#f7a35c 35%,#7a3a1e 85%)', '0 0 40px #ffb36b88'),
@@ -150,7 +151,7 @@ export const LENTES: Option[] = [
 ];
 
 /** Composición. Ver docs/03-diseno-grafico.md §3. */
-export const COMPOSICION: Option[] = [
+const COMPOSICION_BASE: Option[] = [
   o('tercios', 'Regla de tercios', 'rule of thirds composition', 'composición con regla de tercios', { hint: 'El sujeto en un tercio: natural y dinámico.', demo: diagram('comp-thirds') }),
   o('centrada', 'Centrada y simétrica', 'centered symmetrical composition', 'composición centrada y simétrica', { hint: 'Formal, potente e icónica.', demo: diagram('comp-center') }),
   o('aurea', 'Proporción áurea', 'golden ratio spiral composition', 'composición en espiral áurea', { hint: 'La proporción clásica de la armonía.', demo: diagram('comp-golden') }),
@@ -165,7 +166,10 @@ export const COMPOSICION: Option[] = [
 ];
 
 /** Categorías de las listas largas de luz y cámara. */
-export const ILUMINACION_GROUPS: Step['groups'] = [
+export const ILUMINACION: Option[] = [...ILUMINACION_BASE, ...ILUMINACION_EXTRA];
+export const COMPOSICION: Option[] = [...COMPOSICION_BASE, ...COMPOSICION_EXTRA];
+
+const ILUMINACION_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'natural', label: { es: 'Natural' }, optionIds: ['hora-dorada', 'hora-azul', 'nublado', 'luna', 'mediodia', 'ventana', 'persiana'] },
   { id: 'estudio', label: { es: 'Estudio y retrato' }, optionIds: ['estudio', 'clave-alta', 'clave-baja', 'rembrandt', 'split', 'mariposa', 'aro', 'flash'] },
   { id: 'dramatica', label: { es: 'Dramática' }, optionIds: ['claroscuro', 'contraluz', 'volumetrica', 'escenario'] },
@@ -182,8 +186,21 @@ export const LENTES_GROUPS: Step['groups'] = [
   { id: 'foco', label: { es: 'Foco' }, optionIds: ['tilt-shift', 'foco-profundo', 'gran-apertura'] },
 ];
 
-export const COMPOSICION_GROUPS: Step['groups'] = [
+const COMPOSICION_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'reglas', label: { es: 'Reglas clásicas' }, optionIds: ['tercios', 'centrada', 'aurea', 'diagonal'] },
   { id: 'mirada', label: { es: 'Guiar la mirada' }, optionIds: ['lineas-guia', 'marco', 'punto-fuga', 'capas'] },
   { id: 'orden', label: { es: 'Orden y vacío' }, optionIds: ['espacio-negativo', 'patron', 'knolling'] },
 ];
+
+export const ILUMINACION_GROUPS: Step['groups'] = mergeGroups(ILUMINACION_GROUPS_BASE, {
+  natural: ['caustica', 'aurora'],
+  estudio: ['borde', 'tres-puntos'],
+  dramatica: ['relampago', 'vitral-luz', 'linterna'],
+  fuentes: ['neon-dual', 'fluorescente', 'estroboscopica'],
+});
+
+export const COMPOSICION_GROUPS: Step['groups'] = mergeGroups(COMPOSICION_GROUPS_BASE, {
+  reglas: ['triangulo', 'reflejo'],
+  mirada: ['silueta-cielo', 'primer-termino'],
+  orden: ['horizonte-bajo'],
+});

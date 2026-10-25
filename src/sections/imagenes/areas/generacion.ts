@@ -13,7 +13,9 @@ import {
   DETALLES_TEXTURA,
   withDetails,
 } from '../library/detalles';
-import { ESTILOS, ESTILOS_GROUPS, MEDIOS } from '../library/estilos';
+import { ESTILOS, ESTILOS_GROUPS, MEDIOS, MEDIOS_GROUPS } from '../library/estilos';
+import { TECNICAS, VESTUARIO } from '../library/extra';
+import { ASISTENTE_GENERACION, ETAPAS_GENERACION, RECETAS_GENERACION } from '../asistente/generacion';
 import { FILTROS, FILTROS_GROUPS } from '../library/edicion';
 import {
   CAMARAS,
@@ -52,6 +54,7 @@ export const generacion: Area = {
       one: { es: 'Una imagen es de un solo tipo (para mezclar técnicas, elegí Collage).' },
       required: true,
       options: withDetails(MEDIOS, DETALLES_MEDIOS),
+      groups: MEDIOS_GROUPS,
     },
     {
       id: 'sujeto',
@@ -80,6 +83,21 @@ export const generacion: Area = {
       level: 'advanced',
       options: EXPRESIONES,
       groups: EXPRESIONES_GROUPS,
+    },
+    {
+      id: 'vestuario',
+      title: { es: 'Vestuario' },
+      why: { es: 'Si hay personas, la ropa cuenta quiénes son y en qué época viven. Hasta 2.' },
+      role: 'action',
+      type: 'multi',
+      max: 2,
+      level: 'advanced',
+      options: VESTUARIO,
+      groups: [
+        { id: 'diario', label: { es: 'De todos los días' }, optionIds: ['v-casual', 'v-streetwear', 'v-deportiva', 'v-minimal', 'v-playa', 'v-invierno'] },
+        { id: 'ocasion', label: { es: 'Ocasiones' }, optionIds: ['v-formal', 'v-gala', 'v-uniforme', 'v-tradicional'] },
+        { id: 'fantasia', label: { es: 'Época y fantasía' }, optionIds: ['v-vintage', 'v-techwear', 'v-medieval', 'v-disfraz'] },
+      ],
     },
     {
       id: 'entorno',
@@ -211,6 +229,16 @@ export const generacion: Area = {
       template: { en: 'shot on {value}', es: 'tomada con {value}' },
     },
     {
+      id: 'tecnica',
+      title: { es: 'Técnica fotográfica' },
+      why: { es: 'Efectos de cámara que se piden con una palabra: larga exposición, barrido, bokeh. Hasta 2.' },
+      role: 'camera',
+      type: 'multi',
+      max: 2,
+      level: 'advanced',
+      options: TECNICAS,
+    },
+    {
       id: 'textura',
       title: { es: 'Textura y acabado' },
       why: { es: 'El toque final: grano de película, papel, brillo. Hasta 2.' },
@@ -266,4 +294,7 @@ export const generacion: Area = {
       options: FORMATOS,
     },
   ],
+  stages: ETAPAS_GENERACION,
+  presets: RECETAS_GENERACION,
+  assistant: ASISTENTE_GENERACION,
 };

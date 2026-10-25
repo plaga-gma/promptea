@@ -12,6 +12,7 @@ const LABELS: Partial<Record<SegmentRole, [string, string]>> = {
   mood: ['Mood', 'Atmósfera'],
   texture: ['Finish', 'Acabado'],
   typography: ['Typography', 'Tipografía'],
+  quality: ['Quality', 'Calidad'],
   background: ['Background', 'Fondo'],
   intensity: ['Intensity', 'Intensidad'],
 };

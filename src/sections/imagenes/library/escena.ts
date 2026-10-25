@@ -1,5 +1,6 @@
 import type { Demo, Option, Step } from '../../../engine/types';
-import { o } from './_helpers';
+import { mergeGroups, o } from './_helpers';
+import { CAMARAS_EXTRA, EXPRESIONES_EXTRA, MATERIALES_EXTRA } from './extra';
 
 const g = (colors: string[], glyph: string): Demo => ({ kind: 'gradient', colors, glyph });
 const f = (css: string, overlay?: Extract<Demo, { kind: 'filter' }>['overlay']): Demo => ({ kind: 'filter', css, ...(overlay ? { overlay } : {}) });
@@ -37,7 +38,7 @@ export const CLIMAS: Option[] = [
 ];
 
 /** Expresión y pose (si hay personas o animales). */
-export const EXPRESIONES: Option[] = [
+const EXPRESIONES_BASE: Option[] = [
   o('sonrisa', 'Sonrisa natural', 'with a natural warm smile', 'con una sonrisa natural y cálida', { demo: g(['#ffd166', '#ff9f1c'], '🙂') }),
   o('risa', 'Riendo', 'laughing candidly', 'riendo de forma espontánea', { demo: g(['#ffd166', '#ef476f'], '😄') }),
   o('serio', 'Serio', 'with a serious, confident expression', 'con una expresión seria y segura', { demo: g(['#adb5bd', '#495057'], '😐') }),
@@ -56,7 +57,7 @@ export const EXPRESIONES: Option[] = [
  * Cámara y película (solo fotografía). Las demos aplican un look parecido sobre la foto de muestra.
  * Nombrar la cámara o el rollo es una de las formas más efectivas de pedir un "look" fotográfico.
  */
-export const CAMARAS: Option[] = [
+const CAMARAS_BASE: Option[] = [
   o('celular', 'Celular', 'a modern smartphone camera, casual and realistic', 'la cámara de un celular moderno, casual y realista', { hint: 'Natural, como una foto que sacarías vos.', demo: f('contrast(1.04) saturate(1.12) brightness(1.03)') }),
   o('mirrorless', 'Cámara profesional', 'a professional full-frame camera, crisp and detailed', 'una cámara profesional full frame, nítida y detallada', { hint: 'Calidad de fotógrafo profesional.', demo: f('contrast(1.08) saturate(1.05)') }),
   o('medio-formato', 'Medio formato', 'a medium format camera, ultra detailed with smooth tonal range', 'una cámara de medio formato, ultra detallada y con tonos suaves', { hint: 'La de las campañas de moda: detalle y suavidad.', demo: f('contrast(.96) saturate(.95) brightness(1.04)') }),
@@ -72,7 +73,7 @@ export const CAMARAS: Option[] = [
 ];
 
 /** Materiales (útil en 3D, producto y objetos). */
-export const MATERIALES: Option[] = [
+const MATERIALES_BASE: Option[] = [
   o('vidrio', 'Vidrio', 'transparent glass', 'vidrio transparente', { demo: g(['#e0fbfc', '#98c1d9'], '🫙') }),
   o('cromo', 'Cromo', 'polished chrome', 'cromo pulido', { demo: g(['#f8f9fa', '#6c757d'], '🪞') }),
   o('oro', 'Oro', 'shiny gold', 'oro brillante', { demo: g(['#ffe8a3', '#b8860b'], '🥇') }),
@@ -88,6 +89,10 @@ export const MATERIALES: Option[] = [
 ];
 
 /** Categorías de época, clima, expresión, cámara y material. */
+export const EXPRESIONES: Option[] = [...EXPRESIONES_BASE, ...EXPRESIONES_EXTRA];
+export const CAMARAS: Option[] = [...CAMARAS_BASE, ...CAMARAS_EXTRA];
+export const MATERIALES: Option[] = [...MATERIALES_BASE, ...MATERIALES_EXTRA];
+
 export const EPOCAS_GROUPS: Step['groups'] = [
   { id: 'historia', label: { es: 'Historia' }, optionIds: ['prehistoria', 'antiguedad', 'medieval', 'victoriana'] },
   { id: 'siglo20', label: { es: 'Siglo XX' }, optionIds: ['anos20', 'anos50', 'anos70', 'anos80', 'anos90'] },
@@ -99,18 +104,40 @@ export const CLIMAS_GROUPS: Step['groups'] = [
   { id: 'estaciones', label: { es: 'Estaciones' }, optionIds: ['primavera', 'verano', 'otono', 'invierno'] },
 ];
 
-export const EXPRESIONES_GROUPS: Step['groups'] = [
+const EXPRESIONES_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'gesto', label: { es: 'Gesto' }, optionIds: ['sonrisa', 'risa', 'serio', 'pensativo', 'sorpresa', 'melancolia', 'decidido'] },
   { id: 'mirada', label: { es: 'Mirada y pose' }, optionIds: ['mirada-camara', 'mirada-lejos', 'ojos-cerrados', 'espontaneo', 'pose-moda'] },
 ];
 
-export const CAMARAS_GROUPS: Step['groups'] = [
+const CAMARAS_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'camaras', label: { es: 'Cámaras' }, optionIds: ['celular', 'mirrorless', 'medio-formato', 'cine-camara', 'camara-seguridad'] },
   { id: 'rollos', label: { es: 'Rollos de película' }, optionIds: ['portra', 'velvia', 'cinestill', 'hp5'] },
   { id: 'epoca', label: { es: 'Fotos de otra época' }, optionIds: ['instantanea', 'descartable', 'daguerrotipo'] },
 ];
 
-export const MATERIALES_GROUPS: Step['groups'] = [
+const MATERIALES_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'brillantes', label: { es: 'Brillantes' }, optionIds: ['vidrio', 'cromo', 'oro', 'plastico', 'hielo', 'neon-material'] },
   { id: 'naturales', label: { es: 'Naturales y sólidos' }, optionIds: ['marmol', 'madera', 'ceramica', 'terciopelo', 'papel-material', 'concreto'] },
 ];
+
+export const EXPRESIONES_GROUPS: Step['groups'] = mergeGroups(
+  EXPRESIONES_GROUPS_BASE,
+  { gesto: ['enojado', 'asustado', 'confiado'], pose: ['saltando', 'bailando', 'sentado', 'brazos-cruzados', 'caminando'] },
+  { pose: 'Pose y movimiento' },
+);
+
+export const CAMARAS_GROUPS: Step['groups'] = mergeGroups(CAMARAS_GROUPS_BASE, {
+  camaras: ['gopro', 'dron', 'webcam'],
+  rollos: ['ektachrome', 'kodachrome'],
+  epoca: ['camcorder'],
+});
+
+export const MATERIALES_GROUPS: Step['groups'] = mergeGroups(
+  MATERIALES_GROUPS_BASE,
+  {
+    brillantes: ['bronce', 'porcelana', 'resina'],
+    naturales: ['cuero', 'lino', 'piedra'],
+    curiosos: ['goma', 'peluche', 'chocolate', 'carbono', 'lava', 'nubes-material'],
+  },
+  { curiosos: 'Blandos y curiosos' },
+);

@@ -83,12 +83,18 @@ export interface Prefs {
   advanced: boolean;
   /** Foto de muestra sobre la que se ven los filtros. */
   samplePhoto: string;
+  /** El asistente completa por detrás los pasos vacíos. */
+  autopilot: boolean;
+  /** Suma el bloque de calidad: el prompt largo y óptimo. */
+  optimal: boolean;
 }
 
 export const getPrefs = (): Prefs => ({
   modelId: 'generico',
   advanced: false,
   samplePhoto: 'retrato',
+  autopilot: true,
+  optimal: true,
   ...read<Partial<Prefs>>(KEYS.prefs, {}),
 });
 export const setPrefs = (p: Partial<Prefs>) => write(KEYS.prefs, { ...getPrefs(), ...p });

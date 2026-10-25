@@ -1,5 +1,6 @@
 import type { Demo, FilterOverlay, Option, Step } from '../../../engine/types';
-import { BLUR, o } from './_helpers';
+import { BLUR, mergeGroups, o } from './_helpers';
+import { FILTROS_EXTRA, FILTROS_EXTRA_GROUPS, OPERACIONES_EXTRA } from './extra';
 
 const diagram = (name: string): Demo => ({ kind: 'diagram', name });
 const f = (css: string, overlay?: FilterOverlay): Demo => ({ kind: 'filter', css, ...(overlay ? { overlay } : {}) });
@@ -16,7 +17,7 @@ const RESTORED = 'sepia(.45) contrast(1.06)';
  * Operaciones de edición. `{target}` se reemplaza por lo que el usuario escribe en "¿Qué querés cambiar?".
  * Ver docs/01-ingenieria-de-prompts.md §6.
  */
-export const OPERACIONES: Option[] = [
+const OPERACIONES_BASE: Option[] = [
   o('quitar-objeto', 'Quitar algo', 'Remove {target} from the photo and fill the area naturally so no trace remains', 'Quitá {target} de la foto y rellená la zona de forma natural, sin dejar rastros', { hint: 'Borrar una persona, un cable, una mancha, un texto…', demo: diagram('op-remove'), meta: { needsTarget: true, targetHint: 'Ej.: la persona de remera azul que está al fondo' } }),
   o('quitar-fondo', 'Quitar el fondo', 'Remove the background and leave the subject cleanly isolated on {d:fondo}', 'Quitá el fondo y dejá al sujeto bien recortado sobre {d:fondo}', { hint: 'Recortar a la persona u objeto.', demo: diagram('op-cutout'), conflicts: ['p-fondo', 'cambiar-fondo', 'desenfocar-fondo', 'cambiar-cielo', 'expandir'] }),
   o('cambiar-fondo', 'Cambiar el fondo', 'Replace the background with {target}, matching the lighting and perspective of the subject', 'Reemplazá el fondo por {target}, igualando la luz y la perspectiva del sujeto', { hint: 'Poner al sujeto en otro lugar.', demo: diagram('op-background'), meta: { needsTarget: true, targetHint: 'Ej.: una playa al atardecer' }, conflicts: ['p-fondo', 'producto-pro'] }),
@@ -63,7 +64,7 @@ export const OPERACIONES: Option[] = [
  * Filtros y gradación de color. La demo aplica el filtro de verdad sobre una foto de muestra:
  * `url(#pf-…)` son filtros SVG de src/components/demos/FilterDefs.tsx, el resto es CSS.
  */
-export const FILTROS: Option[] = [
+const FILTROS_BASE: Option[] = [
   o('bn', 'Blanco y negro', 'classic black and white with a rich tonal range', 'blanco y negro clásico con buena gama de grises', { demo: f('url(#pf-bn)'), conflicts: ['cine', 'calido', 'frio', 'vaporwave', 'cross', 'infrarrojo', 'duotono', 'noche', 'noir', 'sepia'] }),
   o('noir', 'Cine negro', 'film noir black and white with deep shadows, hard contrast and a dark vignette', 'blanco y negro estilo cine negro, con sombras profundas, contraste duro y viñeta oscura', { hint: 'Blanco y negro dramático, de película policial.', demo: f('url(#pf-noir)', 'vignette'), conflicts: ['cine', 'calido', 'frio', 'vaporwave', 'cross', 'infrarrojo', 'duotono', 'noche', 'bn', 'sepia'] }),
   o('sepia', 'Sepia', 'warm sepia tone', 'tono sepia cálido', { demo: f('sepia(.85) contrast(1.05)'), conflicts: ['cine', 'calido', 'frio', 'vaporwave', 'cross', 'infrarrojo', 'duotono', 'noche', 'bn', 'noir'] }),
@@ -98,8 +99,10 @@ export const FILTROS: Option[] = [
   o('glitch', 'Glitch', 'digital glitch effect with RGB split', 'efecto glitch digital con separación RGB', { demo: f('url(#pf-glitch)', 'scan') }),
 ];
 
-/** Grupos del paso Filtro (Edición y Generación). */
-export const FILTROS_GROUPS: Step['groups'] = [
+export const OPERACIONES: Option[] = [...OPERACIONES_BASE, ...OPERACIONES_EXTRA];
+export const FILTROS: Option[] = [...FILTROS_BASE, ...FILTROS_EXTRA];
+
+const FILTROS_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'clasicos', label: { es: 'Blanco y negro y antiguos' }, optionIds: ['bn', 'noir', 'sepia', 'vintage', 'pelicula', 'polaroid', 'lomo'] },
   { id: 'color', label: { es: 'Color y look de cine' }, optionIds: ['cine', 'bleach', 'calido', 'frio', 'contraste', 'desaturado', 'suave', 'mate', 'hdr', 'cross', 'noche'] },
   { id: 'graficos', label: { es: 'Gráficos y retro' }, optionIds: ['duotono', 'vaporwave', 'posterizado', 'semitono', 'infrarrojo', 'anaglifo', 'glitch'] },
@@ -162,3 +165,6 @@ export const INTENSIDADES: Option[] = [
   o('moderada', 'Moderada', 'Make the change clearly visible but realistic', 'Que el cambio se note, pero que sea realista', { demo: { kind: 'strength', value: 0.7 } }),
   o('fuerte', 'Fuerte', 'Make the change bold and dramatic', 'Que el cambio sea fuerte y llamativo', { demo: { kind: 'strength', value: 1 } }),
 ];
+
+/** Grupos del paso Filtro (Edición y Generación). */
+export const FILTROS_GROUPS: Step['groups'] = mergeGroups(FILTROS_GROUPS_BASE, FILTROS_EXTRA_GROUPS);

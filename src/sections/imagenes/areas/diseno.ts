@@ -13,8 +13,15 @@ import {
   DETALLES_TIPOS_LOGO,
   withDetails,
 } from '../library/detalles';
+import { mergeGroups } from '../library/_helpers';
+import { PIEZAS_EXTRA_GROUPS, TIPOGRAFIAS_EXTRA_GROUPS } from '../library/extra';
+import { ASISTENTE_DISENO, ETAPAS_DISENO, RECETAS_DISENO } from '../asistente/diseno';
 import {
   ELEMENTOS,
+  ELEMENTOS_GROUPS,
+  LAYOUTS_GROUPS,
+  PERSONALIDADES_GROUPS,
+  PRESENTACIONES_GROUPS,
   ESTILOS_DISENO,
   ESTILOS_DISENO_GROUPS,
   FONDOS,
@@ -28,7 +35,10 @@ import {
 import { ESTILOS, ESTILOS_GROUPS } from '../library/estilos';
 
 /** Piezas con varios elementos que ordenar (en un logo, un ícono o un patrón no hace falta elegir diagramación). */
-const CON_DIAGRAMACION = ['flyer', 'post', 'historia', 'poster', 'portada-libro', 'portada-album', 'miniatura', 'banner', 'tarjeta', 'etiqueta', 'menu', 'invitacion', 'infografia', 'web', 'podcast'];
+const CON_DIAGRAMACION = [
+  'flyer', 'post', 'historia', 'poster', 'portada-libro', 'portada-album', 'miniatura', 'banner', 'tarjeta', 'etiqueta', 'menu', 'invitacion', 'infografia', 'web', 'podcast',
+  'carrusel', 'portada-redes', 'slide', 'certificado', 'etiqueta-vino', 'entrada', 'cupon', 'portada-revista', 'afiche-pelicula', 'cartel-local', 'tarjeta-saludo', 'app-mockup',
+];
 
 export const diseno: Area = {
   id: 'diseno',
@@ -53,13 +63,17 @@ export const diseno: Area = {
       one: { es: 'Cada prompt arma una sola pieza: para otra, reiniciá y elegila.' },
       required: true,
       options: withDetails(PIEZAS, DETALLES_PIEZAS),
-      groups: [
+      groups: mergeGroups(
+        [
         { id: 'marca', label: { es: 'Marca' }, optionIds: ['logo', 'icono', 'tarjeta', 'sticker', 'etiqueta'] },
         { id: 'redes', label: { es: 'Redes y video' }, optionIds: ['post', 'historia', 'miniatura', 'podcast', 'fondo-pantalla'] },
         { id: 'impresos', label: { es: 'Impresos' }, optionIds: ['flyer', 'poster', 'menu', 'invitacion', 'infografia', 'portada-libro', 'portada-album'] },
         { id: 'web', label: { es: 'Web' }, optionIds: ['banner', 'web'] },
         { id: 'estampas', label: { es: 'Estampas y patrones' }, optionIds: ['remera', 'patron'] },
-      ],
+        ],
+        PIEZAS_EXTRA_GROUPS,
+        { packaging: 'Packaging' },
+      ),
     },
     {
       id: 'tema',
@@ -98,6 +112,7 @@ export const diseno: Area = {
       type: 'multi',
       max: 2,
       options: PERSONALIDADES,
+      groups: PERSONALIDADES_GROUPS,
       template: { en: 'brand personality: {value}', es: 'personalidad de marca: {value}' },
     },
     {
@@ -121,12 +136,15 @@ export const diseno: Area = {
       max: 2,
       options: TIPOGRAFIAS,
       details: DETALLES_TIPOGRAFIA,
-      groups: [
+      groups: mergeGroups(
+        [
         { id: 'serif', label: { es: 'Con serifa' }, optionIds: ['serif-clasica', 'didona', 'slab'] },
         { id: 'sans', label: { es: 'Sin serifa' }, optionIds: ['geometrica', 'grotesca', 'humanista', 'redondeada', 'condensada', 'extra-negrita', 'mono'] },
         { id: 'mano', label: { es: 'A mano' }, optionIds: ['script', 'manuscrita', 'pincel', 'graffiti-tipo'] },
         { id: 'decorativas', label: { es: 'Decorativas' }, optionIds: ['display', 'inflada', 'contorno', 'neon-tipo', 'futurista-tipo', 'retro70', 'deco', 'western', 'gotica', 'maquina', 'pixel', 'stencil'] },
-      ],
+        ],
+        TIPOGRAFIAS_EXTRA_GROUPS,
+      ),
     },
     {
       id: 'color',
@@ -147,6 +165,7 @@ export const diseno: Area = {
       type: 'single',
       one: { es: 'La pieza tiene una sola diagramación.' },
       options: LAYOUTS,
+      groups: LAYOUTS_GROUPS,
       showIf: { step: 'pieza', in: CON_DIAGRAMACION },
     },
     {
@@ -157,6 +176,7 @@ export const diseno: Area = {
       type: 'multi',
       max: 3,
       options: withDetails(ELEMENTOS, DETALLES_ELEMENTOS),
+      groups: ELEMENTOS_GROUPS,
       template: { en: 'featuring {value}', es: 'con {value}' },
     },
     {
@@ -190,6 +210,7 @@ export const diseno: Area = {
       one: { es: 'El diseño se muestra de una sola forma.' },
       level: 'advanced',
       options: PRESENTACIONES,
+      groups: PRESENTACIONES_GROUPS,
     },
     {
       id: 'atmosfera',
@@ -236,4 +257,7 @@ export const diseno: Area = {
       options: FORMATOS,
     },
   ],
+  stages: ETAPAS_DISENO,
+  presets: RECETAS_DISENO,
+  assistant: ASISTENTE_DISENO,
 };

@@ -34,3 +34,18 @@ export function o(id: string, label: string, en: string, es: string, extra: Extr
 export function img(alt: string, fallback: string[], src?: string): Demo {
   return { kind: 'image', alt, fallback, ...(src ? { src } : {}) };
 }
+
+type Groups = NonNullable<import('../../../engine/types').Step['groups']>;
+
+/**
+ * Suma ids a categorías existentes y crea las que no existen (con su nombre en `labels`).
+ * Sirve para agregar opciones nuevas sin reescribir las listas de categorías.
+ */
+export function mergeGroups(groups: Groups, extra: Record<string, string[]>, labels: Record<string, string> = {}): Groups {
+  const out = groups.map((g) => ({ ...g, optionIds: [...g.optionIds, ...(extra[g.id] ?? [])] }));
+  for (const [id, ids] of Object.entries(extra)) {
+    if (out.some((g) => g.id === id)) continue;
+    out.push({ id, label: { es: labels[id] ?? id }, optionIds: ids });
+  }
+  return out;
+}

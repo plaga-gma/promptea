@@ -16,6 +16,11 @@ interface Props {
   selections: Selections;
   onChange: (value: SelectionValue | undefined) => void;
   onSetKey: (key: string, value: SelectionValue | undefined) => void;
+  /** Lo que eligió el asistente para este paso vacío, si eligió algo. */
+  auto?: Option;
+  /** El usuario no quiere que el asistente complete este paso. */
+  skipped?: boolean;
+  onAuto?: (action: 'keep' | 'skip' | 'allow') => void;
 }
 
 type GridProps = Pick<Props, 'step' | 'value' | 'onChange' | 'selections' | 'onSetKey'>;
@@ -384,7 +389,32 @@ function ColorStep({ step, value, onChange, selections, onSetKey }: GridProps) {
   );
 }
 
-export function StepView({ step, index, value, selections, onChange, onSetKey }: Props) {
+function AutoNote({ auto, skipped, onAuto }: Pick<Props, 'auto' | 'skipped' | 'onAuto'>) {
+  if (skipped)
+    return (
+      <p class="auto-note off">
+        <span>{t.game.autoSkipped}</span>
+        <button type="button" class="btn btn-sm btn-ghost" onClick={() => onAuto?.('allow')}>
+          {t.game.autoAllow}
+        </button>
+      </p>
+    );
+  if (!auto) return null;
+  return (
+    <p class="auto-note" role="status">
+      <em>IA</em>
+      <span>{t.game.autoPicked(auto.label.es)}</span>
+      <button type="button" class="btn btn-sm" onClick={() => onAuto?.('keep')}>
+        {t.game.autoKeep}
+      </button>
+      <button type="button" class="btn btn-sm btn-ghost" onClick={() => onAuto?.('skip')}>
+        {t.game.autoSkip}
+      </button>
+    </p>
+  );
+}
+
+export function StepView({ step, index, value, selections, onChange, onSetKey, auto, skipped, onAuto }: Props) {
   const hasValue =
     value !== undefined && (typeof value === 'string' ? value.trim() !== '' : Array.isArray(value) ? value.length > 0 : Object.values(value).some((v) => v?.trim()));
   const fields = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -418,6 +448,7 @@ export function StepView({ step, index, value, selections, onChange, onSetKey }:
         )}
       </header>
 
+      {!hasValue && <AutoNote auto={auto} skipped={skipped} onAuto={onAuto} />}
       {(step.type === 'single' || step.type === 'multi') && (
         <OptionGrid step={step} value={value} onChange={onChange} selections={selections} onSetKey={onSetKey} />
       )}

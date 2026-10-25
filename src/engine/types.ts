@@ -37,6 +37,8 @@ export type SegmentRole =
   | 'texture'
   | 'typography'
   | 'text'
+  /** Calidad y acabado que suma el asistente en el prompt largo (ver engine/assistant). */
+  | 'quality'
   | 'layout'
   | 'background'
   | 'preserve' // edición: qué no tocar
@@ -60,6 +62,7 @@ export const ROLE_ORDER: SegmentRole[] = [
   'texture',
   'typography',
   'text',
+  'quality',
   'background',
   'preserve',
   'intensity',
@@ -235,6 +238,50 @@ export interface Step {
 /** Tipo de prompt que produce un área. */
 export type AreaMode = 'generate' | 'edit' | 'design';
 
+/**
+ * Etapa del constructor: un "nivel" del juego que agrupa pasos (Idea, Estilo, Luz y color…).
+ * Los pasos que no están en ninguna etapa van a una etapa final "Más detalles".
+ */
+export interface Stage {
+  id: string;
+  title: LocalizedText;
+  /** Emoji o símbolo corto que identifica la etapa en el mapa. */
+  icon: string;
+  steps: string[];
+}
+
+/** Receta: un punto de partida que completa varios pasos de una vez. */
+export interface Preset {
+  id: string;
+  title: LocalizedText;
+  description: LocalizedText;
+  icon: string;
+  colors: string[];
+  selections: Selections;
+}
+
+/**
+ * Lo que el asistente sabe de un área (ver src/engine/assistant/ y docs/09-asistente-ia.md).
+ * Son datos: el motor no conoce ninguna opción en particular.
+ */
+export interface AssistantData {
+  /** Palabras en español (o inglés) que nombran una opción, además de su etiqueta: id de opción → frases. */
+  keywords: Record<string, string[]>;
+  /** Opciones que combinan bien entre sí (en ambos sentidos): id → ids de otros pasos. */
+  pairs: Record<string, string[]>;
+  /**
+   * Pasos que el asistente puede completar solo si el usuario no eligió nada, con la opción
+   * a usar cuando ninguna combinación decide (`fallback`).
+   */
+  autofill: { step: string; fallback: string }[];
+  /** Frases de calidad para el prompt largo: las de siempre y las que suma cada opción elegida. */
+  boosters: { base: PromptText[]; byOption: Record<string, PromptText[]> };
+  /** Cuánto pesa cada rol en el "Poder del prompt" (0 o ausente = no cuenta). */
+  weights: Partial<Record<SegmentRole, number>>;
+  /** Ideas de ejemplo en español, para el botón "Sorprendeme" y como inspiración. */
+  ideas: string[];
+}
+
 export interface Area {
   id: string;
   mode: AreaMode;
@@ -243,6 +290,10 @@ export interface Area {
   description: LocalizedText;
   seo: { title: string; description: string };
   steps: Step[];
+  /** Niveles del constructor. Sin etapas, cada paso es su propio nivel. */
+  stages?: Stage[];
+  presets?: Preset[];
+  assistant?: AssistantData;
 }
 
 export interface Section {

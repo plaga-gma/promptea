@@ -106,6 +106,7 @@ export function bodySentences(
     'texture',
     'typography',
     'text',
+    'quality',
     'background',
     'preserve',
     'intensity',

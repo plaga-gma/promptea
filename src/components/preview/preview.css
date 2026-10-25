@@ -1,0 +1,845 @@
+/* Vista previa: un resumen gráfico del pedido. Todo se mide en % y en cqh (alto del cuadro) para escalar. */
+
+.pv {
+  display: grid;
+  gap: 10px;
+}
+
+.pv-frame {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-height: 46vh;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+  container-type: size;
+  transition: aspect-ratio 0.35s ease;
+}
+
+/* Un cuadro vertical no tiene que ocupar toda la columna: se achica a lo ancho. */
+.pv-frame {
+  width: min(100%, calc(46vh * var(--pv-r, 1)));
+}
+
+.pv-compact .pv-ratio,
+.pv-compact .pv-palette {
+  display: none;
+}
+
+.pv-compact .pv-frame {
+  max-height: none;
+  height: 100%;
+  width: auto;
+  border-radius: var(--radius-sm);
+}
+
+.pv-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transition:
+    background 0.5s ease,
+    filter 0.4s ease,
+    transform 0.4s ease;
+}
+
+.pv-sprite {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  transition:
+    left 0.45s cubic-bezier(0.3, 1.4, 0.5, 1),
+    top 0.45s cubic-bezier(0.3, 1.4, 0.5, 1),
+    font-size 0.45s cubic-bezier(0.3, 1.4, 0.5, 1);
+  filter: drop-shadow(0 0.6cqh 0.8cqh rgb(0 0 0 / 25%));
+}
+
+.pv-subject {
+  z-index: 3;
+  animation: pv-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.pv-companion {
+  z-index: 4;
+}
+
+.pv-unknown {
+  opacity: 0.85;
+}
+
+.pv-prop {
+  z-index: 1;
+  opacity: 0.9;
+}
+
+@keyframes pv-pop {
+  from {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+  }
+}
+
+.pv-ground {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -10%;
+  z-index: 2;
+  border-radius: 40% 40% 0 0 / 6cqh 6cqh 0 0;
+  box-shadow: inset 0 2cqh 4cqh rgb(255 255 255 / 15%);
+  transition:
+    top 0.45s ease,
+    background 0.45s ease;
+}
+
+.view-low .pv-subject {
+  transform: translate(-50%, -50%) perspective(40cqh) rotateX(-12deg) scaleY(1.12);
+}
+
+.view-high .pv-subject {
+  transform: translate(-50%, -50%) perspective(40cqh) rotateX(18deg) scaleY(0.9);
+}
+
+/* Luz */
+.pv-orb {
+  position: absolute;
+  z-index: 1;
+  width: 16cqh;
+  height: 16cqh;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition:
+    left 0.6s ease,
+    top 0.6s ease;
+}
+
+.pv-moon {
+  width: 11cqh;
+  height: 11cqh;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #d7deea 60%, #9aa6bd);
+  box-shadow: 0 0 5cqh #c8d7ff88 !important;
+}
+
+.pv-light {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.pv-neon {
+  box-shadow:
+    inset 6cqh 0 8cqh -3cqh #ff2bd6aa,
+    inset -6cqh 0 8cqh -3cqh #00e5ffaa;
+}
+
+.pv-studio {
+  background: radial-gradient(circle at var(--lx) var(--ly), rgb(255 255 255 / 70%), transparent 55%);
+}
+
+.pv-fire {
+  background: radial-gradient(circle at var(--lx) var(--ly), rgb(255 150 50 / 75%), transparent 50%);
+}
+
+.pv-rays {
+  background: repeating-conic-gradient(from 95deg at var(--lx) var(--ly), rgb(255 245 210 / 38%) 0 3deg, transparent 3deg 11deg);
+  mask-image: radial-gradient(circle 95cqh at var(--lx) var(--ly), #000 10%, transparent 100%);
+}
+
+/* Clima */
+.pv-wx {
+  position: absolute;
+  inset: -20%;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.pv-rain,
+.pv-storm {
+  background: repeating-linear-gradient(105deg, transparent 0 2.2cqh, rgb(190 210 255 / 55%) 2.2cqh 2.5cqh);
+  background-size: 100% 12cqh;
+  animation: pv-rain 0.5s linear infinite;
+}
+
+.pv-storm {
+  animation:
+    pv-rain 0.4s linear infinite,
+    pv-flash 4s steps(1) infinite;
+}
+
+.pv-snow {
+  background-image:
+    radial-gradient(circle, #fff 0.5cqh, transparent 0.7cqh),
+    radial-gradient(circle, #fff 0.35cqh, transparent 0.5cqh);
+  background-size:
+    9cqh 9cqh,
+    6cqh 6cqh;
+  background-position:
+    0 0,
+    3cqh 4cqh;
+  animation: pv-snow 6s linear infinite;
+}
+
+.pv-fog {
+  background: linear-gradient(180deg, transparent 30%, rgb(235 240 245 / 70%) 70%, rgb(255 255 255 / 85%));
+}
+
+.pv-stars {
+  background-image:
+    radial-gradient(circle, #fff 0.25cqh, transparent 0.45cqh),
+    radial-gradient(circle, #fff9 0.2cqh, transparent 0.4cqh);
+  background-size:
+    13cqh 11cqh,
+    7cqh 9cqh;
+  mask-image: linear-gradient(180deg, #000 30%, transparent 70%);
+  animation: pv-twinkle 3s ease-in-out infinite alternate;
+}
+
+.pv-fall {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.pv-fall i {
+  position: absolute;
+  top: -10%;
+  font-size: 5cqh;
+  font-style: normal;
+  animation: pv-fall 5s linear infinite;
+}
+
+.pv-sparkles i {
+  animation: pv-sparkle 2.4s ease-in-out infinite;
+  top: auto;
+  bottom: 35%;
+  font-size: 4cqh;
+}
+
+.pv-sparkles i:nth-child(odd) {
+  bottom: 60%;
+}
+
+@keyframes pv-rain {
+  to {
+    background-position: -4cqh 12cqh;
+  }
+}
+
+@keyframes pv-flash {
+  0%,
+  92% {
+    background-color: transparent;
+  }
+  94% {
+    background-color: rgb(255 255 255 / 55%);
+  }
+}
+
+@keyframes pv-snow {
+  to {
+    background-position:
+      2cqh 9cqh,
+      5cqh 10cqh;
+  }
+}
+
+@keyframes pv-twinkle {
+  to {
+    opacity: 0.55;
+  }
+}
+
+@keyframes pv-fall {
+  to {
+    transform: translate(6cqh, 120cqh) rotate(220deg);
+  }
+}
+
+@keyframes pv-sparkle {
+  50% {
+    transform: scale(1.4);
+    opacity: 0.4;
+  }
+}
+
+.pv-palette {
+  position: absolute;
+  right: 2.5cqh;
+  bottom: 2.5cqh;
+  z-index: 7;
+  display: flex;
+  gap: 0.6cqh;
+  padding: 0.6cqh;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 75%);
+}
+
+.pv-palette i {
+  width: 3cqh;
+  height: 3cqh;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%);
+}
+
+.pv-scene .ov,
+.pv-tx {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.pv-tx {
+  opacity: 0.55;
+  mix-blend-mode: multiply;
+}
+
+.pv-ratio {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 9;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: rgb(0 0 0 / 45%);
+  color: #fff;
+  font: 600 11px/1.6 var(--mono);
+}
+
+/* Estilo del sujeto según el tipo de imagen */
+.look-dibujo,
+.look-lapiz,
+.look-carbonilla,
+.look-boceto,
+.look-tinta {
+  filter: grayscale(1) contrast(1.6) !important;
+}
+
+.look-pintura,
+.look-oleo,
+.look-acuarela,
+.look-gouache,
+.look-impresionismo {
+  filter: saturate(1.3) blur(0.12cqh) drop-shadow(0 0 0.4cqh rgb(0 0 0 / 30%)) !important;
+}
+
+.look-pixel,
+.look-voxel {
+  filter: url(#pf-pixel) !important;
+}
+
+.look-render3d,
+.look-animacion3d,
+.look-clay,
+.look-figura,
+.look-icono3d {
+  filter: drop-shadow(0 1.2cqh 1.2cqh rgb(0 0 0 / 35%)) saturate(1.15) !important;
+}
+
+.look-vectorial,
+.look-flat,
+.look-sticker-ilus,
+.look-emoji {
+  filter: drop-shadow(0.5cqh 0 0 #fff) drop-shadow(-0.5cqh 0 0 #fff) drop-shadow(0 0.5cqh 0 #fff) drop-shadow(0 -0.5cqh 0 #fff) !important;
+}
+
+/* Vacío */
+.pv-empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  color: var(--muted);
+  text-align: center;
+  padding: 12px;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 10px, rgb(109 74 255 / 5%) 10px 20px),
+    var(--surface-2);
+}
+
+.pv-empty span {
+  font-size: 22cqh;
+  opacity: 0.5;
+  animation: pv-float 3s ease-in-out infinite alternate;
+}
+
+@keyframes pv-float {
+  to {
+    transform: translateY(-2cqh) rotate(-4deg);
+  }
+}
+
+/* Etiquetas: el resumen en palabras, cada una lleva a su paso. */
+.pv-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pv-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  animation: pv-in 0.25s ease;
+}
+
+.pv-tag:hover {
+  border-color: var(--primary);
+}
+
+.pv-tag.is-auto {
+  border-style: dashed;
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.pv-tag em {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 9.5px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+@keyframes pv-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Diseño */
+.pv-design {
+  container-type: size;
+  font-family: var(--font);
+}
+
+.pv-checker {
+  background: repeating-conic-gradient(#e6e6e6 0 25%, #ffffff 0 50%) 0 0 / 4cqh 4cqh !important;
+}
+
+.pv-art {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 34%;
+  font-size: 30cqh;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  animation: pv-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+  transition: all 0.45s ease;
+}
+
+.pv-copy {
+  position: absolute;
+  z-index: 3;
+  left: 8%;
+  right: 8%;
+  top: 60%;
+  display: grid;
+  justify-items: center;
+  gap: 1.2cqh;
+  text-align: center;
+  transition: all 0.45s ease;
+}
+
+.pv-title {
+  font-size: min(9cqh, calc(130cqw / var(--lw, 8)));
+  line-height: 1.05;
+  overflow-wrap: break-word;
+}
+
+.pv-sub {
+  font-size: 4.2cqh;
+  opacity: 0.8;
+}
+
+.pv-cta {
+  padding: 0.8cqh 2.4cqh;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 3.6cqh;
+  font-weight: 700;
+}
+
+.pv-logo .pv-art {
+  top: 40%;
+  width: 40cqh;
+  height: 40cqh;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  font-size: 22cqh;
+}
+
+.pv-logo .pv-copy {
+  top: 70%;
+}
+
+.l-dividido .pv-art {
+  left: 25%;
+  top: 50%;
+}
+
+.l-dividido::before {
+  content: '';
+  position: absolute;
+  inset: 0 50% 0 0;
+  background: var(--accent);
+  opacity: 0.85;
+}
+
+.l-dividido .pv-copy {
+  left: 54%;
+  right: 4%;
+  top: 30%;
+  justify-items: start;
+  text-align: left;
+}
+
+.l-tipografico .pv-art {
+  font-size: 14cqh;
+  left: 82%;
+  top: 14%;
+}
+
+.l-tipografico .pv-copy {
+  top: 22%;
+  justify-items: start;
+  text-align: left;
+}
+
+.l-tipografico .pv-title {
+  font-size: min(20cqh, calc(122cqw / var(--lw, 8)));
+  line-height: 0.92;
+}
+
+.l-imagen-completa .pv-art {
+  top: 45%;
+  font-size: 62cqh;
+  opacity: 0.9;
+}
+
+.l-imagen-completa .pv-copy {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4cqh 6%;
+  background: linear-gradient(180deg, transparent, rgb(0 0 0 / 65%));
+  color: #fff;
+}
+
+.l-asimetrico .pv-art {
+  left: 70%;
+  top: 30%;
+  transform: translate(-50%, -50%) rotate(-10deg);
+}
+
+.l-asimetrico .pv-copy,
+.l-espacio-texto .pv-copy,
+.l-z .pv-copy {
+  justify-items: start;
+  text-align: left;
+  right: 30%;
+}
+
+.l-asimetrico .pv-copy {
+  top: 62%;
+}
+
+.l-espacio-texto .pv-art {
+  left: 74%;
+  top: 55%;
+  font-size: 40cqh;
+}
+
+.l-espacio-texto .pv-copy {
+  top: 18%;
+  right: 45%;
+}
+
+.l-z .pv-copy {
+  top: 8%;
+}
+
+.l-z .pv-art {
+  top: 52%;
+}
+
+.l-z .pv-cta {
+  position: absolute;
+  right: -40%;
+  top: 72cqh;
+}
+
+.l-grilla,
+.l-bento {
+  background-image:
+    linear-gradient(var(--ink) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ink) 1px, transparent 1px) !important;
+  background-size: 25% 25% !important;
+  background-color: var(--surface) !important;
+}
+
+.l-grilla .pv-copy,
+.l-bento .pv-copy {
+  top: 6%;
+  justify-items: start;
+  text-align: left;
+}
+
+.l-grilla .pv-art,
+.l-bento .pv-art {
+  left: 62%;
+  top: 62%;
+}
+
+.l-marco .pv-copy,
+.l-collage .pv-copy {
+  top: 64%;
+}
+
+.l-marco::after,
+.pv-frame-el,
+.pv-shape.pv-frame {
+  content: '';
+  position: absolute;
+  inset: 4%;
+  border: 0.8cqh double var(--ink);
+  border-radius: 2cqh;
+  pointer-events: none;
+}
+
+.l-collage .pv-art {
+  transform: translate(-50%, -50%) rotate(8deg);
+  padding: 2cqh;
+  background: #fff;
+  box-shadow: 0 1cqh 2cqh rgb(0 0 0 / 25%);
+}
+
+.pv-shape {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pv-circle {
+  width: 46cqh;
+  height: 46cqh;
+  right: -12cqh;
+  top: -12cqh;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.35;
+}
+
+.pv-blob {
+  width: 50cqh;
+  height: 40cqh;
+  left: -14cqh;
+  bottom: -10cqh;
+  border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+  background: var(--accent);
+  opacity: 0.3;
+}
+
+.pv-lines {
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 6cqh, rgb(0 0 0 / 8%) 6cqh 6.3cqh);
+}
+
+.pv-grad {
+  inset: 0;
+  background: linear-gradient(135deg, transparent 30%, var(--accent));
+  opacity: 0.45;
+}
+
+.pv-pattern {
+  inset: 0;
+  background: radial-gradient(circle, var(--accent) 0.6cqh, transparent 0.8cqh) 0 0 / 6cqh 6cqh;
+  opacity: 0.35;
+}
+
+.pv-deco {
+  position: absolute;
+  z-index: 4;
+  font-size: 8cqh;
+}
+
+.pv-d1 {
+  left: 10%;
+  top: 12%;
+}
+
+.pv-d2 {
+  right: 10%;
+  bottom: 30%;
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.pv-d3 {
+  right: 8%;
+  top: 8%;
+  transform: rotate(14deg);
+}
+
+.pv-mockup {
+  position: absolute;
+  z-index: 9;
+  right: 2cqh;
+  bottom: 2cqh;
+  display: grid;
+  place-items: center;
+  width: 12cqh;
+  height: 12cqh;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 7cqh;
+}
+
+/* Edición: antes y después */
+.pv-half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.pv-half img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition:
+    filter 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.pv-before,
+.pv-after {
+  inset: 0;
+}
+
+.pv-after {
+  clip-path: inset(0 0 0 var(--fx));
+}
+
+.pv-after .pv-cut {
+  mask-image: radial-gradient(ellipse 22% 36% at var(--fx) var(--fy), #000 70%, transparent 74%);
+}
+
+.pv-after .pv-blur {
+  filter: blur(1.4cqh);
+}
+
+.pv-after .ov {
+  position: absolute;
+  inset: 0;
+}
+
+.pv-newbg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 60cqh;
+  opacity: 0.85;
+}
+
+.pv-edit-title {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 8%;
+  z-index: 3;
+  color: #fff;
+  font-size: 8cqh;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0.5cqh 2cqh rgb(0 0 0 / 60%);
+  text-transform: uppercase;
+}
+
+.pv-split {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--fx);
+  z-index: 4;
+  width: 3px;
+  margin-left: -1.5px;
+  background: #fff;
+  box-shadow: 0 0 6px rgb(0 0 0 / 40%);
+}
+
+.pv-split::after {
+  content: '⇆';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 7cqh;
+  height: 7cqh;
+  border-radius: 50%;
+  background: #fff;
+  color: #333;
+  font-size: 4cqh;
+  transform: translate(-50%, -50%);
+}
+
+.pv-ops {
+  position: absolute;
+  right: 2cqh;
+  top: 2cqh;
+  z-index: 5;
+  display: flex;
+  gap: 1cqh;
+}
+
+.pv-op {
+  display: grid;
+  place-items: center;
+  width: 9cqh;
+  height: 9cqh;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 90%);
+  font-size: 5cqh;
+  box-shadow: 0 0.5cqh 1.5cqh rgb(0 0 0 / 25%);
+  animation: pv-pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv *,
+  .pv *::before,
+  .pv *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

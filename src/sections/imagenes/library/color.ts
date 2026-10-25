@@ -1,5 +1,6 @@
 import type { Demo, Option, Step } from '../../../engine/types';
-import { o } from './_helpers';
+import { mergeGroups, o } from './_helpers';
+import { ATMOSFERAS_EXTRA, PALETAS_EXTRA, TEXTURAS_EXTRA } from './extra';
 
 const sw = (...colors: string[]) => ({ kind: 'swatch' as const, colors });
 
@@ -7,7 +8,7 @@ const sw = (...colors: string[]) => ({ kind: 'swatch' as const, colors });
  * Paletas listas. Los colores de la demo también viajan al prompt como HEX.
  * La herramienta de armonías (src/engine/color.ts) permite crear una propia.
  */
-export const PALETAS: Option[] = [
+const PALETAS_BASE: Option[] = [
   o('pastel', 'Pastel', 'soft pastel color palette', 'paleta de colores pastel suaves', { hint: 'Suave, dulce y tranquila.', demo: sw('#ffd6e0', '#c1e7e3', '#fff1b6', '#d7c4f0') }),
   o('tierra', 'Tonos tierra', 'warm earth tone palette of terracotta, ochre and olive', 'paleta de tonos tierra: terracota, ocre y oliva', { hint: 'Cálida, natural y artesanal.', demo: sw('#c8553d', '#d9a441', '#6b705c', '#3f2e26') }),
   o('neon', 'Neón', 'vibrant neon palette of electric pink, cyan and purple on dark', 'paleta neón vibrante: rosa eléctrico, cian y violeta sobre oscuro', { hint: 'Energía, noche y tecnología.', demo: sw('#ff2bd6', '#00f0ff', '#7b2dff', '#0b0620') }),
@@ -34,7 +35,7 @@ export const PALETAS: Option[] = [
 
 /** Atmósfera (mood). */
 const g = (...colors: string[]) => ({ kind: 'gradient' as const, colors });
-export const ATMOSFERAS: Option[] = [
+const ATMOSFERAS_BASE: Option[] = [
   o('serena', 'Serena', 'a serene, peaceful atmosphere', 'una atmósfera serena y tranquila', { hint: 'Calma y paz.', demo: g('#cde7f0', '#f6efe3') }),
   o('alegre', 'Alegre', 'a joyful, upbeat atmosphere', 'una atmósfera alegre y positiva', { hint: 'Energía positiva y optimismo.', demo: g('#ffd23f', '#ff7aa2') }),
   o('dramatica', 'Dramática', 'a dramatic, intense atmosphere', 'una atmósfera dramática e intensa', { hint: 'Tensión y emoción fuerte.', demo: g('#1b1b1b', '#9b2226') }),
@@ -59,7 +60,7 @@ export const ATMOSFERAS: Option[] = [
 const tx = (name: string) => ({ kind: 'texture' as const, name });
 /** Las texturas que se pueden ver sobre una foto usan la misma demo que los filtros. */
 const onPhoto = (css: string, overlay: Extract<Demo, { kind: 'filter' }>['overlay']): Demo => ({ kind: 'filter', css, overlay });
-export const TEXTURAS: Option[] = [
+const TEXTURAS_BASE: Option[] = [
   o('grano', 'Grano de película', 'subtle film grain', 'grano de película sutil', { hint: 'Aspecto analógico y orgánico.', demo: onPhoto('contrast(1.05)', 'grain') }),
   o('papel', 'Textura de papel', 'visible paper texture', 'textura de papel visible', { hint: 'Como impreso o dibujado sobre papel.', demo: onPhoto('sepia(.2) contrast(.92)', 'paper') }),
   o('trama', 'Trama de puntos', 'halftone dot texture', 'textura de trama de puntos (halftone)', { hint: 'Puntos de impresión, estilo cómic o retro.', demo: onPhoto('url(#pf-halftone)', 'halftone') }),
@@ -98,7 +99,11 @@ export const EVITAR: Option[] = [
 ];
 
 /** Categorías de paletas, atmósferas y texturas. */
-export const PALETAS_GROUPS: Step['groups'] = [
+export const PALETAS: Option[] = [...PALETAS_BASE, ...PALETAS_EXTRA];
+export const ATMOSFERAS: Option[] = [...ATMOSFERAS_BASE, ...ATMOSFERAS_EXTRA];
+export const TEXTURAS: Option[] = [...TEXTURAS_BASE, ...TEXTURAS_EXTRA];
+
+const PALETAS_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'suaves', label: { es: 'Suaves y neutras' }, optionIds: ['pastel', 'monocromo', 'blanco-negro', 'nordico', 'cafe', 'corporativo'] },
   { id: 'calidas', label: { es: 'Cálidas' }, optionIds: ['tierra', 'atardecer', 'otono-paleta', 'caramelo', 'retro70', 'vintage'] },
   { id: 'naturales', label: { es: 'Frías y naturales' }, optionIds: ['oceano', 'bosque', 'mediterraneo'] },
@@ -106,14 +111,43 @@ export const PALETAS_GROUPS: Step['groups'] = [
   { id: 'elegantes', label: { es: 'Elegantes y oscuras' }, optionIds: ['lujo', 'joya', 'gotico'] },
 ];
 
-export const ATMOSFERAS_GROUPS: Step['groups'] = [
+const ATMOSFERAS_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'luminosas', label: { es: 'Luminosas' }, optionIds: ['serena', 'alegre', 'acogedora', 'romantica', 'festiva', 'energica'] },
   { id: 'intensas', label: { es: 'Intensas' }, optionIds: ['dramatica', 'epica', 'caotica', 'futurista', 'lujosa'] },
   { id: 'oscuras', label: { es: 'Oscuras' }, optionIds: ['misteriosa', 'inquietante', 'melancolica', 'solitaria'] },
   { id: 'intimas', label: { es: 'Íntimas y nostálgicas' }, optionIds: ['nostalgica', 'onirica', 'intima'] },
 ];
 
-export const TEXTURAS_GROUPS: Step['groups'] = [
+const TEXTURAS_GROUPS_BASE: NonNullable<Step['groups']> = [
   { id: 'impresion', label: { es: 'Película y papel' }, optionIds: ['grano', 'papel', 'trama', 'lienzo', 'grunge', 'vhs'] },
   { id: 'superficie', label: { es: 'Superficie' }, optionIds: ['brillante', 'mate', 'metalico', 'holografico'] },
 ];
+
+export const PALETAS_GROUPS: Step['groups'] = mergeGroups(
+  PALETAS_GROUPS_BASE,
+  {
+    suaves: ['salvia', 'mocha'],
+    calidas: ['terracota', 'desierto'],
+    naturales: ['hielo', 'primavera-paleta'],
+    intensas: ['azul-klein', 'rosa-barbie', 'rojo-mono', 'verde-acido'],
+    fiestas: ['halloween', 'navidad'],
+  },
+  { fiestas: 'Fiestas' },
+);
+
+export const ATMOSFERAS_GROUPS: Step['groups'] = mergeGroups(ATMOSFERAS_GROUPS_BASE, {
+  luminosas: ['esperanzadora', 'magica', 'absurda'],
+  intensas: ['tensa', 'rebelde', 'heroica'],
+  oscuras: ['aterradora'],
+  intimas: ['zen'],
+});
+
+export const TEXTURAS_GROUPS: Step['groups'] = mergeGroups(
+  TEXTURAS_GROUPS_BASE,
+  {
+    impresion: ['acuarela-papel', 'craquelado', 'arrugado'],
+    superficie: ['oxido', 'terciopelo-tx'],
+    efectos: ['vidrio-lluvia', 'escarcha', 'purpurina'],
+  },
+  { efectos: 'Efectos' },
+);
